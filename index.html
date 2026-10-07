@@ -319,7 +319,7 @@
     <div class="category-scroll" id="categoryContainer">
         <!-- Dinamik eklenecek -->
     </div>
-
+<input type="text" id="searchInput" placeholder="Balık ara...">
     <!-- ÜRÜNLER LİSTESİ -->
     <div class="container">
         <div class="product-grid" id="productGrid">
@@ -378,21 +378,18 @@
             </form>
         </div>
     </div>
-
+    
     <script>
         // KATEGORİ LİSTESİ
         const categories = [
-            "Tümü",
-            "Lepistesler",
-            "Çöpçüler",
-            "Vatozlar",
-            "Bettalar",
-            "Tetralar",
-            "Cikletler",
-            "Japon Balıkları",
-            "Canlı Doğuranlar",
-            "Channa",
-            "Diğer Balıklar"
+            [
+    "Tümü",
+    {
+        name: "Balıklar",
+        subcategories: ["Lepistesler", "Canlı Doğuranlar", "Tetralar", "Cikletler'',''Japon Balıkları",''Monster'',''Karidesler'',''Omurgasızlar'']
+    },
+    "Akvaryumlar"
+]
         ];
 
         let currentCategory = "Tümü";
@@ -563,7 +560,11 @@
         }
 
         // YÖNETİM MODAL AÇ/KAPAT
-        function toggleAdminPanel() {
+      const password = prompt("Yönetim paneli için şifre girin:");
+if (password !== "SDeÜ-X1!") {
+    alert("Yanlış şifre!");
+    return;
+}  function toggleAdminPanel() {
             document.getElementById("productId").value = "";
             document.getElementById("productForm").reset();
             document.getElementById("pFotoBase64").value = "";
