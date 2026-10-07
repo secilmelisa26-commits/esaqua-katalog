@@ -1,13 +1,20 @@
 
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Esaqua Pet Shop - Güncel Balık Kataloğu</title>
+    <title>Esaqua Pet Shop - Güncel Ürün Kataloğu</title>
     <!-- Arama Motorlarının İndekslemesini Engelleme -->
     <meta name="robots" content="noindex, nofollow">
-    
+
+    <!-- FIREBASE SDK (Ücretsiz Veritabanı ve Güvenli Giriş) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+
     <style>
         :root {
             --primary: #0284c7;
@@ -31,38 +38,63 @@
         body {
             background-color: var(--bg);
             color: var(--text);
-            padding-bottom: 60px;
+            padding-bottom: 70px;
         }
 
-        /* HEADER */
+        /* UYGULAMA ÜST BAŞLIK */
         header {
             background: var(--card-bg);
             text-align: center;
-            padding: 20px 15px 15px;
+            padding: 16px 15px 12px;
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 20;
         }
 
         header h1 {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             color: var(--primary-dark);
             letter-spacing: 0.5px;
+            font-weight: 800;
         }
 
         header p {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-light);
-            margin-top: 4px;
+            margin-top: 2px;
         }
 
-        /* KATEGORİ SEÇİCİ (YATAY KAYDIRMALI MOBİL MENÜ) */
+        /* ARAMA ÇUBUĞU */
+        .search-container {
+            padding: 10px 15px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            background: #f1f5f9;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            background: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        }
+
+        /* KATEGORİ MENÜSÜ (YATAY KAYDIRMALI MOBİL MENÜ) */
         .category-scroll {
             display: flex;
             overflow-x: auto;
             white-space: nowrap;
-            padding: 12px 15px;
+            padding: 10px 15px;
             background: var(--card-bg);
             border-bottom: 1px solid var(--border);
             gap: 8px;
@@ -76,9 +108,9 @@
         .cat-btn {
             background: #f1f5f9;
             border: 1px solid var(--border);
-            padding: 8px 16px;
+            padding: 7px 14px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 600;
             color: var(--text);
             cursor: pointer;
@@ -91,11 +123,11 @@
             border-color: var(--primary);
         }
 
-        /* ÜRÜN LİSTESİ Grid */
+        /* ÜRÜN LİSTESİ GRID */
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 15px;
+            padding: 12px;
         }
 
         .product-grid {
@@ -137,9 +169,9 @@
         }
 
         .product-title {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 700;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
         .product-desc {
@@ -162,13 +194,13 @@
         }
 
         .product-price {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 800;
             color: var(--primary-dark);
         }
 
         .badge {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 600;
             padding: 3px 6px;
             border-radius: 6px;
@@ -184,9 +216,16 @@
             color: var(--out-stock);
         }
 
-        /* YÖNETİM BUTONLARI (KART İÇİ) */
+        /* YÖNETİCİ BUTONLARI (MÜŞTERİLERE GİZLİ) */
+        .admin-only {
+            display: none !important;
+        }
+
+        body.is-admin .admin-only {
+            display: flex !important;
+        }
+
         .admin-actions {
-            display: flex;
             gap: 4px;
             margin-top: 8px;
         }
@@ -204,8 +243,8 @@
         .btn-edit { background: #e0f2fe; color: #0369a1; }
         .btn-delete { background: #fee2e2; color: #dc2626; }
 
-        /* YÖNETİM PANELİ MODAL/DÜĞME */
-        .admin-toggle {
+        /* YÖNETİM PANELİ VE GİRİŞ / MODAL */
+        .admin-fab {
             position: fixed;
             bottom: 15px;
             right: 15px;
@@ -213,15 +252,14 @@
             color: white;
             padding: 10px 16px;
             border-radius: 30px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             border: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             cursor: pointer;
             z-index: 100;
         }
 
-        /* YÖNETİM FORMU MODAL */
         .modal {
             display: none;
             position: fixed;
@@ -240,7 +278,7 @@
         .modal-content {
             background: white;
             width: 100%;
-            max-width: 450px;
+            max-width: 420px;
             border-radius: 12px;
             padding: 20px;
             max-height: 90vh;
@@ -312,26 +350,48 @@
 
     <header>
         <h1>ESAQUA PET SHOP</h1>
-        <p>🐟 Güncel Balık Listemiz & Fiyat Kataloğu</p>
+        <p>🐟 Güncel Balık & Ürün Kataloğu</p>
     </header>
 
-    <!-- KATEGORİLER -->
-    <div class="category-scroll" id="categoryContainer">
-        <!-- Dinamik eklenecek -->
+    <!-- ARAMA ÇUBUĞU -->
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Balık veya ürün ara (örn: lepistes, akvaryum)..." oninput="handleSearch()">
     </div>
-<input type="text" id="searchInput" placeholder="Balık ara...">
-    <!-- ÜRÜNLER LİSTESİ -->
+
+    <!-- KATEGORİ SEÇİCİ -->
+    <div class="category-scroll" id="categoryContainer"></div>
+
+    <!-- ÜRÜN LİSTESİ GRID -->
     <div class="container">
-        <div class="product-grid" id="productGrid">
-            <!-- Dinamik eklenecek -->
+        <div class="product-grid" id="productGrid"></div>
+    </div>
+
+    <!-- YÖNETİCİ BUTONU (GİRİŞ VEYA YENİ ÜRÜN EKLEME) -->
+    <button class="admin-fab" id="adminFab" onclick="openAdminPortal()">🔒 Yönetici Girişi</button>
+
+    <!-- GÜVENLİ GİRİŞ MODAL -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-title">Yönetici Girişi</div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>E-posta</label>
+                    <input type="email" id="loginEmail" required placeholder="admin@esaqua.com">
+                </div>
+                <div class="form-group">
+                    <label>Şifre</label>
+                    <input type="password" id="loginPassword" required placeholder="******">
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn-save">GİRİŞ YAP</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal('loginModal')">Kapat</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- YÖNETİM BUTONU -->
-    <button class="admin-toggle" onclick="toggleAdminPanel()">⚙️ Yönetim Paneli</button>
-
-    <!-- YÖNETİM MODAL -->
-    <div class="modal" id="adminModal">
+    <!-- ÜRÜN EKLE / DÜZENLE MODAL -->
+    <div class="modal" id="productModal">
         <div class="modal-content">
             <div class="modal-title" id="modalTitle">Yeni Ürün Ekle</div>
             <form id="productForm" onsubmit="saveProduct(event)">
@@ -368,60 +428,90 @@
 
                 <div class="form-group">
                     <label>Açıklama (Opsiyonel)</label>
-                    <textarea id="pDesc" rows="2" placeholder="Örn: Yerli üretim, sağlıklı ve formda."></textarea>
+                    <textarea id="pDesc" rows="2" placeholder="Örn: Yüksek formda, sağlıklı."></textarea>
                 </div>
 
                 <div class="form-buttons">
                     <button type="submit" class="btn-save">KAYDET</button>
-                    <button type="button" class="btn-cancel" onclick="closeAdminModal()">İptal</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal('productModal')">İptal</button>
                 </div>
             </form>
         </div>
     </div>
-    
+
     <script>
-        // KATEGORİ LİSTESİ
+        // FIREBASE YAPILANDIRMASI
+        // (Firebase panelinizden alacağınız bilgileri buradaki tırnakların içine yapıştırabilirsiniz)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "esaqua-katalog.firebaseapp.com",
+            projectId: "esaqua-katalog",
+            storageBucket: "esaqua-katalog.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:1234567890"
+        };
+
+        // Firebase başlatma (Ayarlar hazır olana kadar yedekli çalışır)
+        let db = null;
+        let auth = null;
+        let isFirebaseConnected = false;
+
+        try {
+            if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                auth = firebase.auth();
+                isFirebaseConnected = true;
+            }
+        } catch (e) {
+            console.log("Firebase henüz yapılandırılmadı, yerel modda çalışıyor.");
+        }
+
+        // KATEGORİ LİSTESİ ("Akvaryumlar" eklendi)
         const categories = [
-            [
-    "Tümü",
-    {
-        name: "Balıklar",
-        subcategories: ["Lepistesler", "Canlı Doğuranlar", "Tetralar", "Cikletler'',''Japon Balıkları",''Monster'',''Karidesler'',''Omurgasızlar'']
-    },
-    "Akvaryumlar"
-]
+            "Tümü",
+            "Lepistesler",
+            "Canlı Doğuranlar",
+            "Çöpçüler",
+            "Vatozlar",
+            "Bettalar",
+            "Tetralar",
+            "Cikletler",
+            "Japon Balıkları",
+            ''Monster'',
+            ''Karidesler'',
+             ''Omurgasızlar'',
+            "Akvaryumlar",
+                  
         ];
 
         let currentCategory = "Tümü";
+        let searchQuery = "";
+        let isAdminLoggedIn = false;
+
+        // BAŞLANGIÇ YEDEK/ÖORNEK VERİLERİ
         let products = JSON.parse(localStorage.getItem("esaqua_products")) || [
-            {
-                id: 1,
-                name: "Full Red Lepistes",
-                category: "Lepistesler",
-                price: 150,
-                inStock: true,
-                photo: "",
-                desc: "Yüksek formda, özel ırk."
-            },
-            {
-                id: 2,
-                name: "Oranda",
-                category: "Japon Balıkları",
-                price: 400,
-                inStock: true,
-                photo: "",
-                desc: "İthal kaliteli gövde yapısı."
-            },
-            {
-                id: 3,
-                name: "Panda Corydoras",
-                category: "Çöpçüler",
-                price: 90,
-                inStock: true,
-                photo: "",
-                desc: "Taban temizliği için ideal barışçıl tür."
-            }
+            { id: 1, name: "Full Red Lepistes", category: "Lepistesler", price: 150, inStock: true, photo: "", desc: "Yüksek formda, özel ırk." },
+            { id: 2, name: "Oranda", category: "Japon Balıkları", price: 400, inStock: true, photo: "", desc: "İthal kaliteli gövde yapısı." },
+            { id: 3, name: "Panda Corydoras", category: "Çöpçüler", price: 90, inStock: true, photo: "", desc: "Taban temizliği için barışçıl tür." },
+            { id: 4, name: "60x40x40 Extra Clear Akvaryum", category: "Akvaryumlar", price: 2500, inStock: true, photo: "", desc: "Rodajlı cam, sıfır imalat." }
         ];
+
+        // OTURUM DURUMU KONTROLÜ
+        if (auth) {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    isAdminLoggedIn = true;
+                    document.body.classList.add("is-admin");
+                    document.getElementById("adminFab").innerText = "➕ Yeni Ürün Ekle";
+                } else {
+                    isAdminLoggedIn = false;
+                    document.body.classList.remove("is-admin");
+                    document.getElementById("adminFab").innerText = "🔒 Yönetici Girişi";
+                }
+                renderProducts();
+            });
+        }
 
         // KATEGORİLERİ ÇİZ
         function renderCategories() {
@@ -448,17 +538,30 @@
             });
         }
 
-        // ÜRÜNLERİ ÇİZ
+        // ÜRÜNLERİ FİLTRELE VE ÇİZ
         function renderProducts() {
             const grid = document.getElementById("productGrid");
             grid.innerHTML = "";
 
-            const filtered = currentCategory === "Tümü" 
-                ? products 
-                : products.filter(p => p.category === currentCategory);
+            let filtered = products;
+
+            // Kategori filtresi
+            if (currentCategory !== "Tümü") {
+                filtered = filtered.filter(p => p.category === currentCategory);
+            }
+
+            // Arama filtresi (İsim, Kategori ve Açıklama)
+            if (searchQuery.trim() !== "") {
+                const query = searchQuery.toLowerCase().trLowerCase();
+                filtered = filtered.filter(p => 
+                    (p.name && p.name.toLowerCase().trLowerCase().includes(query)) ||
+                    (p.category && p.category.toLowerCase().trLowerCase().includes(query)) ||
+                    (p.desc && p.desc.toLowerCase().trLowerCase().includes(query))
+                );
+            }
 
             if(filtered.length === 0) {
-                grid.innerHTML = `<div class="empty-msg">Bu kategoride henüz balık bulunmuyor.</div>`;
+                grid.innerHTML = `<div class="empty-msg">Aradığınız kriterlere uygun ürün veya balık bulunamadı.</div>`;
                 return;
             }
 
@@ -477,14 +580,20 @@
                                 ${p.inStock ? 'Stokta' : 'Tükendi'}
                             </span>
                         </div>
-                        <div class="admin-actions">
-                            <button class="admin-btn btn-edit" onclick="editProduct(${p.id})">Düzenle</button>
-                            <button class="admin-btn btn-delete" onclick="deleteProduct(${p.id})">Sil</button>
+                        <div class="admin-actions admin-only">
+                            <button class="admin-btn btn-edit" onclick="editProduct('${p.id}')">Düzenle</button>
+                            <button class="admin-btn btn-delete" onclick="deleteProduct('${p.id}')">Sil</button>
                         </div>
                     </div>
                 `;
                 grid.appendChild(card);
             });
+        }
+
+        // ARAMA DİNLEYİCİSİ
+        function handleSearch() {
+            searchQuery = document.getElementById("searchInput").value;
+            renderProducts();
         }
 
         // RESİM YÜKLEME
@@ -499,6 +608,49 @@
             }
         }
 
+        // YÖNETİCİ PORTALINI AÇ
+        function openAdminPortal() {
+            if (isAdminLoggedIn) {
+                // Zaten giriş yapılmışsa doğrudan Ürün Ekleme açılır
+                document.getElementById("productId").value = "";
+                document.getElementById("productForm").reset();
+                document.getElementById("pFotoBase64").value = "";
+                document.getElementById("modalTitle").innerText = "Yeni Ürün Ekle";
+                document.getElementById("productModal").classList.add("active");
+            } else {
+                // Giriş yapılmamışsa Şifre Ekranı açılır
+                document.getElementById("loginModal").classList.add("active");
+            }
+        }
+
+        // GÜVENLİ GİRİŞ YAP
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById("loginEmail").value;
+            const pass = document.getElementById("loginPassword").value;
+
+            if (auth) {
+                auth.signInWithEmailAndPassword(email, pass)
+                    .then(() => {
+                        closeModal('loginModal');
+                    })
+                    .catch(err => {
+                        alert("Giriş başarısız: " + err.message);
+                    });
+            } else {
+                // Firebase bağlantısı olana kadar geçici demo onay
+                if (pass !== "SDeÜ-X1!") {
+  alert("Hatalı şifre!");
+  return;
+}
+                isAdminLoggedIn = true;
+                document.body.classList.add("is-admin");
+                document.getElementById("adminFab").innerText = "➕ Yeni Ürün Ekle";
+                closeModal('loginModal');
+                renderProducts();
+            }
+        }
+
         // ÜRÜN KAYDET / GÜNCELLE
         function saveProduct(e) {
             e.preventDefault();
@@ -510,8 +662,7 @@
             const photo = document.getElementById("pFotoBase64").value;
             const desc = document.getElementById("pDesc").value;
 
-            if(id) {
-                // Düzenle
+            if (id) {
                 const index = products.findIndex(p => p.id == id);
                 if(index !== -1) {
                     products[index] = {
@@ -521,7 +672,6 @@
                     };
                 }
             } else {
-                // Yeni Ekle
                 products.push({
                     id: Date.now(),
                     name, category, price, inStock, photo, desc
@@ -529,7 +679,7 @@
             }
 
             localStorage.setItem("esaqua_products", JSON.stringify(products));
-            closeAdminModal();
+            closeModal('productModal');
             renderProducts();
         }
 
@@ -547,7 +697,7 @@
             document.getElementById("pFotoBase64").value = p.photo || "";
             document.getElementById("modalTitle").innerText = "Ürün Düzenle";
 
-            document.getElementById("adminModal").classList.add("active");
+            document.getElementById("productModal").classList.add("active");
         }
 
         // ÜRÜN SİL
@@ -559,22 +709,16 @@
             }
         }
 
-        // YÖNETİM MODAL AÇ/KAPAT
-      const password = prompt("Yönetim paneli için şifre girin:");
-if (password !== "SDeÜ-X1!") {
-    alert("Yanlış şifre!");
-    return;
-}  function toggleAdminPanel() {
-            document.getElementById("productId").value = "";
-            document.getElementById("productForm").reset();
-            document.getElementById("pFotoBase64").value = "";
-            document.getElementById("modalTitle").innerText = "Yeni Ürün Ekle";
-            document.getElementById("adminModal").classList.add("active");
+        function closeModal(id) {
+            document.getElementById(id).classList.remove("active");
         }
 
-        function closeAdminModal() {
-            document.getElementById("adminModal").classList.remove("active");
-        }
+        // TÜRKÇE KARAKTER UYUMLU ARAMA DESTEĞİ
+        String.prototype.trLowerCase = function() {
+            let string = this;
+            const letters = { "İ": "i", "I": "ı", "Ş": "ş", "Ğ": "ğ", "Ü": "ü", "Ö": "ö", "Ç": "ç" };
+            return string.replace(/[İIŞĞÜÖÇ]/g, letter => letters[letter]);
+        };
 
         // İLK ÇALIŞTIRMA
         renderCategories();
