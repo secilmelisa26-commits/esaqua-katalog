@@ -1,15 +1,10 @@
-
-
-
-     <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- GOOGLE ARAMALARINDA ÇIKMAMASI İÇİN -->
+    <!-- GOOGLE VE ARAMA MOTORLARINA KAPALI (Sadece link ile erişim) -->
     <meta name="robots" content="noindex, nofollow">
-    
     <title>Esaqua Petshop - Akvaryum Balıkları Kataloğu</title>
     <style>
         :root {
@@ -91,7 +86,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.03);
         }
 
-        /* Sabit ve Şık Arama Kutusu */
+        /* Sabit Arama Kutusu */
         .search-container {
             margin-bottom: 1rem;
         }
@@ -112,31 +107,105 @@
             border-color: var(--primary);
         }
 
-        /* TELEFONA GÖRE SIĞABİLEN KOMPAKT IZGARA */
-        .grid {
+        /* Navigasyon Başlığı ve Geri Butonu */
+        .nav-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+        }
+
+        .back-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        /* KATEGORİ KARTLARI IZGARASI */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+        }
+
+        @media (min-width: 600px) {
+            .category-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .category-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .category-card:active {
+            transform: scale(0.98);
+        }
+
+        .category-card-img {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            background-color: #eee;
+        }
+
+        .category-card-body {
+            padding: 0.6rem;
+        }
+
+        .category-card-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 0.2rem;
+            line-height: 1.2;
+        }
+
+        .category-card-count {
+            font-size: 0.72rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* ÜRÜN KARTLARI IZGARASI */
+        .product-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 0.6rem;
         }
 
         @media (min-width: 500px) {
-            .grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
+            .product-grid { grid-template-columns: repeat(3, 1fr); }
         }
-
         @media (min-width: 768px) {
-            .grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 0.8rem;
-            }
-            header h1 { font-size: 1.8rem; }
-        }
-
-        @media (min-width: 1024px) {
-            .grid {
-                grid-template-columns: repeat(5, 1fr);
-            }
+            .product-grid { grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
         }
 
         .card {
@@ -148,21 +217,6 @@
             flex-direction: column;
             position: relative;
             border: 1px solid #e8e8e8;
-        }
-
-        .category-badge {
-            position: absolute;
-            top: 6px;
-            left: 6px;
-            background-color: rgba(0, 136, 204, 0.9);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 6px;
-            font-size: 0.55rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-            z-index: 2;
         }
 
         .stock-badge {
@@ -178,23 +232,14 @@
             z-index: 2;
         }
 
-        .stock-in {
-            background-color: rgba(39, 174, 96, 0.95);
-        }
-
-        .stock-out {
-            background-color: rgba(231, 76, 60, 0.95);
-        }
+        .stock-in { background-color: rgba(39, 174, 96, 0.95); }
+        .stock-out { background-color: rgba(231, 76, 60, 0.95); }
 
         .card-img {
             width: 100%;
             height: 110px;
             object-fit: cover;
             background-color: #eee;
-        }
-
-        @media (min-width: 768px) {
-            .card-img { height: 130px; }
         }
 
         .card-body {
@@ -270,57 +315,20 @@
             border: 1px solid #e0e0e0;
         }
 
-        .admin-panel.active {
-            display: block;
-        }
+        .admin-panel.active { display: block; }
 
-        .admin-panel h2 {
-            margin-bottom: 0.7rem;
-            color: var(--primary-dark);
-            font-size: 1.1rem;
-        }
-
-        .form-group {
-            margin-bottom: 0.7rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.2rem;
-            font-weight: 600;
-            font-size: 0.8rem;
-        }
-
+        .form-group { margin-bottom: 0.7rem; }
+        .form-group label { display: block; margin-bottom: 0.2rem; font-weight: 600; font-size: 0.8rem; }
         .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 0.6rem;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            background-color: #fafafa;
+            width: 100%; padding: 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem; background-color: #fafafa;
         }
 
         .btn-submit {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.7rem 1rem;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            cursor: pointer;
-            font-weight: 700;
-            width: 100%;
-            margin-top: 0.3rem;
+            background-color: var(--primary); color: white; border: none; padding: 0.7rem 1rem; border-radius: 6px; font-size: 0.95rem; cursor: pointer; font-weight: 700; width: 100%; margin-top: 0.3rem;
         }
 
         .no-result {
-            text-align: center;
-            padding: 2rem 1rem;
-            color: #777;
-            font-size: 0.9rem;
-            grid-column: 1 / -1;
-            background: white;
-            border-radius: 10px;
+            text-align: center; padding: 2rem 1rem; color: #777; font-size: 0.9rem; grid-column: 1 / -1; background: white; border-radius: 10px;
         }
     </style>
 </head>
@@ -335,31 +343,37 @@
     <div class="container">
         <!-- Bilgilendirme Notu -->
         <div class="info-notice">
-            📌 <strong>Not:</strong> Kataloğumuzdaki balıklar ve fiyatlar anlık olarak güncellenmektedir. Güncel stok ve fiyatlar listelenmiştir.
+            📌 <strong>Not:</strong> Kataloğumuzdaki balıklar ve fiyatlar anlık olarak güncellenmektedir. Lütfen sipariş öncesi stok teyit ediniz.
         </div>
 
         <!-- Sabit Arama Motoru -->
         <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Balık adı, türü veya açıklama ara..." oninput="filterProducts()">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Balık adı, türü veya açıklama ara..." oninput="handleSearch()">
+        </div>
+
+        <!-- Navigasyon Başlığı -->
+        <div class="nav-header">
+            <span id="sectionTitle" class="section-title">Kategoriler</span>
+            <button id="backBtn" class="back-btn" onclick="showCategories()">← Tüm Kategoriler</button>
         </div>
 
         <!-- Şifreli Yönetici Paneli -->
         <div id="adminPanel" class="admin-panel">
-            <h2 id="formTitle">Yeni Balık Ekle</h2>
+            <h2 id="formTitle" style="font-size:1.1rem; margin-bottom:0.6rem; color:var(--primary-dark);">Yeni Balık Ekle</h2>
             <form id="fishForm" onsubmit="handleSaveFish(event)">
                 <input type="hidden" id="editingProductId" value="">
                 
                 <div class="form-group">
-                    <label for="fishCategory">Balık Grubu / Türü (Etiket için)</label>
+                    <label for="fishCategory">Kategori Seçin</label>
                     <select id="fishCategory" required>
-                        <option value="Lepistes & Canlı Doğuranlar">Lepistes & Canlı Doğuranlar</option>
+                        <option value="Lepistes & Canlı Doğuran Türleri">Lepistes & Canlı Doğuran Türleri</option>
                         <option value="Cüce Ciklet Türleri">Cüce Ciklet Türleri</option>
-                        <option value="Channa / Yılanbaş Türleri">Channa / Yılanbaş Türleri</option>
                         <option value="Tetra & Sürü Balıkları">Tetra & Sürü Balıkları</option>
-                        <option value="Cichlid / Ciklet Türleri">Cichlid / Ciklet Türleri (Oscar vb.)</option>
-                        <option value="Vatoz, Çöpçü & Salyangoz">Vatoz, Çöpçü & Salyangoz</option>
-                        <option value="Japon & Betta">Japon & Betta</option>
-                        <option value="Bitki & Malzemeler">Bitki & Malzemeler</option>
+                        <option value="Ciklet Türleri">Ciklet Türleri (Oscar vb.)</option>
+                        <option value="Vatoz, Çöpçü & Dip Balıkları">Vatoz, Çöpçü & Dip Balıkları</option>
+                        <option value="Japon Balıkları">Japon Balıkları</option>
+                        <option value="Betalar">Betalar</option>
+                        <option value="Bitki & Akvaryum Malzemeleri">Bitki & Akvaryum Malzemeleri</option>
                     </select>
                 </div>
 
@@ -370,7 +384,7 @@
 
                 <div class="form-group">
                     <label for="fishDesc">Açıklama / Bakım Bilgisi</label>
-                    <textarea id="fishDesc" rows="2" required placeholder="Su şartları, karakteri..."></textarea>
+                    <textarea id="fishDesc" rows="2" required placeholder="Açıklama..."></textarea>
                 </div>
 
                 <div class="form-group">
@@ -395,199 +409,25 @@
             </form>
         </div>
 
-        <!-- Balık Listesi -->
-        <div id="productGrid" class="grid"></div>
+        <!-- Kategori Kartları Görünümü -->
+        <div id="categoryGrid" class="category-grid"></div>
+
+        <!-- Ürünler Görünümü -->
+        <div id="productGrid" class="product-grid" style="display: none;"></div>
     </div>
 
     <script>
         const ADMIN_PASSWORD = "1234";
         let isAdminLoggedIn = false;
+        let currentCategory = null;
 
-        const initialProducts = [
-            {
-                id: 1,
-                category: "Lepistes & Canlı Doğuranlar",
-                name: "Full Red Lepistes",
-                description: "Popüler canlı doğuran türü.",
-                price: 50,
-                inStock: true,
-                image: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80"
-            },
-            {
-                id: 2,
-                category: "Cüce Ciklet Türleri",
-                name: "Apistogramma Kakadu",
-                description: "Gösterişli sırt yüzgeci.",
-                price: 150,
-                inStock: true,
-                image: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=600&q=80"
-            },
-            {
-                id: 3,
-                category: "Channa / Yılanbaş Türleri",
-                name: "Akadu (Channa)",
-                description: "Yüksek zekalı avcı tür.",
-                price: 350,
-                inStock: false,
-                image: "https://images.unsplash.com/photo-1548407260-da850faa41e3?auto=format&fit=crop&w=600&q=80"
-            }
-        ];
-
-        function getProducts() {
-            const stored = localStorage.getItem('esaqua_fish_list_v7');
-            if (stored) {
-                return JSON.parse(stored);
-            } else {
-                localStorage.setItem('esaqua_fish_list_v7', JSON.stringify(initialProducts));
-                return initialProducts;
-            }
-        }
-
-        function saveProducts(products) {
-            localStorage.setItem('esaqua_fish_list_v7', JSON.stringify(products));
-            filterProducts();
-        }
-
-        function renderProducts(products) {
-            const grid = document.getElementById('productGrid');
-            grid.innerHTML = '';
-
-            if (products.length === 0) {
-                grid.innerHTML = `<div class="no-result">Aramanızla eşleşen balık bulunamadı.</div>`;
-                return;
-            }
-
-            products.forEach(p => {
-                const imgUrl = p.image || 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
-                
-                const actionButtons = isAdminLoggedIn ? `
-                    <div class="card-actions">
-                        <button class="btn-action btn-edit" onclick="startEditProduct(${p.id})">Düzenle</button>
-                        <button class="btn-action btn-delete" onclick="deleteProduct(${p.id})">Sil</button>
-                    </div>
-                ` : '';
-
-                const stockBadge = p.inStock !== false 
-                    ? `<span class="stock-badge stock-in">Var</span>` 
-                    : `<span class="stock-badge stock-out">Yok</span>`;
-
-                const shortCategory = (p.category || 'Balık').split('&')[0];
-
-                const cardHtml = `
-                    <div class="card">
-                        <span class="category-badge">${shortCategory}</span>
-                        ${stockBadge}
-                        <img src="${imgUrl}" alt="${p.name}" class="card-img">
-                        <div class="card-body">
-                            <h3 class="card-title" title="${p.name}">${p.name}</h3>
-                            <p class="card-desc">${p.description}</p>
-                            <div class="card-footer">
-                                <span class="card-price">${parseFloat(p.price).toLocaleString('tr-TR')} ₺</span>
-                                ${actionButtons}
-                            </div>
-                        </div>
-                    </div>
-                `;
-                grid.innerHTML += cardHtml;
-            });
-        }
-
-        function filterProducts() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            const allProducts = getProducts();
-            
-            const filtered = allProducts.filter(p => 
-                p.name.toLowerCase().includes(query) || 
-                p.description.toLowerCase().includes(query) ||
-                (p.category && p.category.toLowerCase().includes(query))
-            );
-
-            renderProducts(filtered);
-        }
-
-        function handleAdminToggle() {
-            const panel = document.getElementById('adminPanel');
-
-            if (!isAdminLoggedIn) {
-                const password = prompt("Yönetici Panelini açmak için şifreyi giriniz:");
-                if (password === ADMIN_PASSWORD) {
-                    isAdminLoggedIn = true;
-                    panel.classList.add('active');
-                    alert("Yönetici girişi başarılı!");
-                    filterProducts();
-                } else if (password !== null) {
-                    alert("Hatalı şifre!");
-                }
-            } else {
-                panel.classList.toggle('active');
-                if (!panel.classList.contains('active')) {
-                    resetForm();
-                }
-            }
-        }
-
-        function handleSaveFish(event) {
-            event.preventDefault();
-            
-            const editingId = document.getElementById('editingProductId').value;
-            const category = document.getElementById('fishCategory').value;
-            const name = document.getElementById('fishName').value;
-            const description = document.getElementById('fishDesc').value;
-            const price = parseFloat(document.getElementById('fishPrice').value);
-            const inStock = document.getElementById('fishStock').value === 'in_stock';
-            const image = document.getElementById('fishImage').value;
-
-            let products = getProducts();
-
-            if (editingId) {
-                products = products.map(p => p.id == editingId ? { id: Number(editingId), category, name, description, price, inStock, image } : p);
-            } else {
-                products.push({ id: Date.now(), category, name, description, price, inStock, image });
-            }
-
-            saveProducts(products);
-            resetForm();
-            document.getElementById('adminPanel').classList.remove('active');
-        }
-
-        function startEditProduct(id) {
-            const products = getProducts();
-            const product = products.find(p => p.id === id);
-            if (!product) return;
-
-            document.getElementById('editingProductId').value = product.id;
-            document.getElementById('fishCategory').value = product.category || 'Lepistes & Canlı Doğuranlar';
-            document.getElementById('fishName').value = product.name;
-            document.getElementById('fishDesc').value = product.description;
-            document.getElementById('fishPrice').value = product.price;
-            document.getElementById('fishStock').value = product.inStock !== false ? 'in_stock' : 'out_of_stock';
-            document.getElementById('fishImage').value = product.image || '';
-
-            document.getElementById('formTitle').textContent = 'Balık Bilgisini Güncelle';
-            document.getElementById('submitBtn').textContent = 'Kayıt Güncelle';
-
-            const panel = document.getElementById('adminPanel');
-            if (!panel.classList.contains('active')) {
-                panel.classList.add('active');
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function deleteProduct(id) {
-            if (confirm('Bu balığı silmek istediğinize emin misiniz?')) {
-                const products = getProducts().filter(p => p.id !== id);
-                saveProducts(products);
-            }
-        }
-
-        function resetForm() {
-            document.getElementById('fishForm').reset();
-            document.getElementById('editingProductId').value = '';
-            document.getElementById('formTitle').textContent = 'Yeni Balık Ekle';
-            document.getElementById('submitBtn').textContent = 'Kataloğa Kaydet';
-        }
-
-        document.addEventListener('DOMContentLoaded', filterProducts);
-    </script>
-</body>
-</html>
+        // İSTENEN KATEGORİ LİSTESİ VE GÖRSELLERİ
+        const CATEGORIES_CONFIG = {
+            "Lepistes & Canlı Doğuran Türleri": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=500&q=80",
+            "Cüce Ciklet Türleri": "https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=500&q=80",
+            "Tetra & Sürü Balıkları": "https://images.unsplash.com/photo-1520301255226-bf5f144451c1?auto=format&fit=crop&w=500&q=80",
+            "Ciklet Türleri": "https://images.unsplash.com/photo-1548407260-da850faa41e3?auto=format&fit=crop&w=500&q=80",
+            "Vatoz, Çöpçü & Dip Balıkları": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=500&q=80",
+            "Japon Balıkları": "https://images.unsplash.com/photo-1524704796725-9fc80448d2b2?auto=format&fit=crop&w=500&q=80",
+            "Betalar": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=500&q=80",
+            "Bitki & Akvaryum Malzemeleri": "
