@@ -1,13 +1,13 @@
 
 
 
-         <!DOCTYPE html>
+     <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- GOOGLE ARAMALARINDA ÇIKMAMASI İÇİN (Sadece link ile erişim) -->
+    <!-- GOOGLE ARAMALARINDA ÇIKMAMASI İÇİN -->
     <meta name="robots" content="noindex, nofollow">
     
     <title>Esaqua Petshop - Akvaryum Balıkları Kataloğu</title>
@@ -21,7 +21,6 @@
             --accent: #27ae60;
             --danger: #e74c3c;
             --warning: #f39c12;
-            --out-stock: #7f8c8d;
         }
 
         * {
@@ -42,69 +41,67 @@
             background: linear-gradient(135deg, #0088cc, #004466);
             color: white;
             text-align: center;
-            padding: 2rem 1rem 1.2rem 1rem;
+            padding: 1.5rem 1rem 1rem 1rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             position: relative;
         }
 
         header h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             margin-bottom: 0.2rem;
             font-weight: 700;
         }
 
         header p {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             opacity: 0.9;
         }
 
         .admin-toggle-btn {
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: 10px;
+            right: 10px;
             background: rgba(255,255,255,0.25);
             border: 1px solid rgba(255,255,255,0.4);
             color: white;
-            padding: 6px 12px;
+            padding: 5px 10px;
             border-radius: 20px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
             backdrop-filter: blur(4px);
         }
 
         .container {
             max-width: 1100px;
-            margin: 1rem auto;
-            padding: 0 0.8rem;
+            margin: 0.8rem auto;
+            padding: 0 0.6rem;
         }
 
-        /* Bilgi Notu Kutusu */
+        /* Bilgilendirme Notu */
         .info-notice {
             background-color: #eef7fc;
             border-left: 4px solid var(--primary);
             color: #004466;
-            padding: 0.8rem 1rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            line-height: 1.4;
-            margin-bottom: 1rem;
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            line-height: 1.35;
+            margin-bottom: 0.8rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.03);
         }
 
-        .controls-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-            margin-bottom: 1.2rem;
+        /* Sabit ve Şık Arama Kutusu */
+        .search-container {
+            margin-bottom: 1rem;
         }
 
         .search-input {
             width: 100%;
-            padding: 0.9rem 1.2rem;
-            font-size: 1rem;
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
             border: 2px solid #ddd;
-            border-radius: 12px;
+            border-radius: 10px;
             outline: none;
             transition: border-color 0.2s;
             box-shadow: 0 2px 5px rgba(0,0,0,0.03);
@@ -115,137 +112,117 @@
             border-color: var(--primary);
         }
 
-        /* Mobil Kaydırılabilir Kategori Menüsü */
-        .category-tabs {
-            display: flex;
-            gap: 0.5rem;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-
-        .category-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .tab-btn {
-            background: white;
-            border: 1px solid #ddd;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            white-space: nowrap;
-            transition: all 0.2s;
-            flex-shrink: 0;
-            color: #555;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .tab-btn.active {
-            background-color: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
+        /* TELEFONA GÖRE SIĞABİLEN KOMPAKT IZGARA */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 0.9rem;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
         }
 
-        @media (min-width: 600px) {
+        @media (min-width: 500px) {
             .grid {
-                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-                gap: 1.2rem;
+                grid-template-columns: repeat(3, 1fr);
             }
-            header h1 { font-size: 2.2rem; }
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 0.8rem;
+            }
+            header h1 { font-size: 1.8rem; }
+        }
+
+        @media (min-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
         }
 
         .card {
             background-color: var(--card-bg);
-            border-radius: 14px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
             position: relative;
-            border: 1px solid #eee;
+            border: 1px solid #e8e8e8;
         }
 
         .category-badge {
             position: absolute;
-            top: 8px;
-            left: 8px;
+            top: 6px;
+            left: 6px;
             background-color: rgba(0, 136, 204, 0.9);
             color: white;
-            padding: 3px 8px;
-            border-radius: 8px;
-            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 0.55rem;
             font-weight: 700;
             text-transform: uppercase;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            backdrop-filter: blur(2px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            z-index: 2;
         }
 
         .stock-badge {
             position: absolute;
-            top: 8px;
-            right: 8px;
-            padding: 3px 8px;
-            border-radius: 8px;
-            font-size: 0.65rem;
+            top: 6px;
+            right: 6px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 0.55rem;
             font-weight: 700;
             color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            backdrop-filter: blur(2px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            z-index: 2;
         }
 
         .stock-in {
-            background-color: rgba(39, 174, 96, 0.9);
+            background-color: rgba(39, 174, 96, 0.95);
         }
 
         .stock-out {
-            background-color: rgba(231, 76, 60, 0.9);
+            background-color: rgba(231, 76, 60, 0.95);
         }
 
         .card-img {
             width: 100%;
-            height: 150px;
+            height: 110px;
             object-fit: cover;
             background-color: #eee;
         }
 
-        @media (min-width: 600px) {
-            .card-img { height: 200px; }
-            .category-badge, .stock-badge { font-size: 0.75rem; padding: 4px 10px; }
+        @media (min-width: 768px) {
+            .card-img { height: 130px; }
         }
 
         .card-body {
-            padding: 0.8rem;
+            padding: 0.6rem;
             display: flex;
             flex-direction: column;
             flex-grow: 1;
         }
 
         .card-title {
-            font-size: 1rem;
+            font-size: 0.85rem;
             font-weight: 700;
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.2rem;
             color: #111;
             line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .card-desc {
-            font-size: 0.8rem;
+            font-size: 0.72rem;
             color: #666;
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.5rem;
             flex-grow: 1;
-            line-height: 1.35;
+            line-height: 1.3;
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -255,27 +232,27 @@
             justify-content: space-between;
             align-items: center;
             border-top: 1px solid #f0f0f0;
-            padding-top: 0.6rem;
+            padding-top: 0.4rem;
             margin-top: auto;
         }
 
         .card-price {
-            font-size: 1.15rem;
+            font-size: 0.95rem;
             font-weight: 800;
             color: var(--accent);
         }
 
         .card-actions {
             display: flex;
-            gap: 0.3rem;
+            gap: 0.2rem;
         }
 
         .btn-action {
             border: none;
-            padding: 5px 8px;
-            border-radius: 6px;
+            padding: 3px 6px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             font-weight: 600;
             color: white;
         }
@@ -285,10 +262,10 @@
 
         .admin-panel {
             background: white;
-            padding: 1.2rem;
-            border-radius: 14px;
+            padding: 1rem;
+            border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
             display: none;
             border: 1px solid #e0e0e0;
         }
@@ -298,28 +275,28 @@
         }
 
         .admin-panel h2 {
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.7rem;
             color: var(--primary-dark);
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
 
         .form-group {
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.7rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.2rem;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .form-group input, .form-group textarea, .form-group select {
             width: 100%;
-            padding: 0.7rem;
+            padding: 0.6rem;
             border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 0.95rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
             background-color: #fafafa;
         }
 
@@ -327,23 +304,23 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
-            font-size: 1rem;
+            padding: 0.7rem 1rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
             cursor: pointer;
             font-weight: 700;
             width: 100%;
-            margin-top: 0.4rem;
+            margin-top: 0.3rem;
         }
 
         .no-result {
             text-align: center;
-            padding: 2.5rem 1rem;
+            padding: 2rem 1rem;
             color: #777;
-            font-size: 1rem;
+            font-size: 0.9rem;
             grid-column: 1 / -1;
             background: white;
-            border-radius: 12px;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -361,21 +338,9 @@
             📌 <strong>Not:</strong> Kataloğumuzdaki balıklar ve fiyatlar anlık olarak güncellenmektedir. Güncel stok ve fiyatlar listelenmiştir.
         </div>
 
-        <!-- Arama ve Filtreleme -->
-        <div class="controls-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Balık adı veya türü ara (Tüm dükkanda arar)..." oninput="filterProducts()">
-            
-            <div class="category-tabs" id="categoryTabs">
-                <button class="tab-btn active" onclick="setCategory('hepsi', this)">🐟 Tüm Balıklar</button>
-                <button class="tab-btn" onclick="setCategory('Lepistes & Canlı Doğuranlar', this)">Lepistes & Canlı Doğuran</button>
-                <button class="tab-btn" onclick="setCategory('Cüce Ciklet Türleri', this)">Cüce Cikletler</button>
-                <button class="tab-btn" onclick="setCategory('Channa / Yılanbaş Türleri', this)">Channa / Yılanbaş</button>
-                <button class="tab-btn" onclick="setCategory('Tetra & Sürü Balıkları', this)">Tetra & Sürü</button>
-                <button class="tab-btn" onclick="setCategory('Cichlid / Ciklet Türleri', this)">Ciklet Türleri (Oscar vb.)</button>
-                <button class="tab-btn" onclick="setCategory('Vatoz, Çöpçü & Salyangoz', this)">Vatoz & Salyangoz</button>
-                <button class="tab-btn" onclick="setCategory('Japon & Betta', this)">Japon & Betta</button>
-                <button class="tab-btn" onclick="setCategory('Bitki & Malzemeler', this)">Bitki & Malzeme</button>
-            </div>
+        <!-- Sabit Arama Motoru -->
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Balık adı, türü veya açıklama ara..." oninput="filterProducts()">
         </div>
 
         <!-- Şifreli Yönetici Paneli -->
@@ -385,7 +350,7 @@
                 <input type="hidden" id="editingProductId" value="">
                 
                 <div class="form-group">
-                    <label for="fishCategory">Balık Grubu / Türü</label>
+                    <label for="fishCategory">Balık Grubu / Türü (Etiket için)</label>
                     <select id="fishCategory" required>
                         <option value="Lepistes & Canlı Doğuranlar">Lepistes & Canlı Doğuranlar</option>
                         <option value="Cüce Ciklet Türleri">Cüce Ciklet Türleri</option>
@@ -405,7 +370,7 @@
 
                 <div class="form-group">
                     <label for="fishDesc">Açıklama / Bakım Bilgisi</label>
-                    <textarea id="fishDesc" rows="3" required placeholder="Su şartları, karakteri, besleme bilgisi..."></textarea>
+                    <textarea id="fishDesc" rows="2" required placeholder="Su şartları, karakteri..."></textarea>
                 </div>
 
                 <div class="form-group">
@@ -435,17 +400,15 @@
     </div>
 
     <script>
-        // Yönetici Şifreniz
         const ADMIN_PASSWORD = "1234";
         let isAdminLoggedIn = false;
-        let selectedCategory = 'hepsi';
 
         const initialProducts = [
             {
                 id: 1,
                 category: "Lepistes & Canlı Doğuranlar",
                 name: "Full Red Lepistes",
-                description: "Akvaryuma harika bir kırmızı renk katan, canlı doğuran türlerin en popüler üyelerinden biri.",
+                description: "Popüler canlı doğuran türü.",
                 price: 50,
                 inStock: true,
                 image: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80"
@@ -454,7 +417,7 @@
                 id: 2,
                 category: "Cüce Ciklet Türleri",
                 name: "Apistogramma Kakadu",
-                description: "Sıcaklığa göre cinsiyeti belirlenen, gösterişli sırt yüzgeci ve renkleriyle göz dolduran cüce ciklet.",
+                description: "Gösterişli sırt yüzgeci.",
                 price: 150,
                 inStock: true,
                 image: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=600&q=80"
@@ -463,7 +426,7 @@
                 id: 3,
                 category: "Channa / Yılanbaş Türleri",
                 name: "Akadu (Channa)",
-                description: "Yüksek zekası, bölgeci karakteri ve eşsiz duruşuyla gerçek bir akvaryum karizması.",
+                description: "Yüksek zekalı avcı tür.",
                 price: 350,
                 inStock: false,
                 image: "https://images.unsplash.com/photo-1548407260-da850faa41e3?auto=format&fit=crop&w=600&q=80"
@@ -471,17 +434,17 @@
         ];
 
         function getProducts() {
-            const stored = localStorage.getItem('esaqua_fish_list_v5');
+            const stored = localStorage.getItem('esaqua_fish_list_v7');
             if (stored) {
                 return JSON.parse(stored);
             } else {
-                localStorage.setItem('esaqua_fish_list_v5', JSON.stringify(initialProducts));
+                localStorage.setItem('esaqua_fish_list_v7', JSON.stringify(initialProducts));
                 return initialProducts;
             }
         }
 
         function saveProducts(products) {
-            localStorage.setItem('esaqua_fish_list_v5', JSON.stringify(products));
+            localStorage.setItem('esaqua_fish_list_v7', JSON.stringify(products));
             filterProducts();
         }
 
@@ -490,7 +453,7 @@
             grid.innerHTML = '';
 
             if (products.length === 0) {
-                grid.innerHTML = `<div class="no-result">Aradığınız kriterlere uygun balık bulunamadı.</div>`;
+                grid.innerHTML = `<div class="no-result">Aramanızla eşleşen balık bulunamadı.</div>`;
                 return;
             }
 
@@ -505,16 +468,18 @@
                 ` : '';
 
                 const stockBadge = p.inStock !== false 
-                    ? `<span class="stock-badge stock-in">Stokta Var</span>` 
-                    : `<span class="stock-badge stock-out">Stokta Yok</span>`;
+                    ? `<span class="stock-badge stock-in">Var</span>` 
+                    : `<span class="stock-badge stock-out">Yok</span>`;
+
+                const shortCategory = (p.category || 'Balık').split('&')[0];
 
                 const cardHtml = `
                     <div class="card">
-                        <span class="category-badge">${p.category || 'Balık Türü'}</span>
+                        <span class="category-badge">${shortCategory}</span>
                         ${stockBadge}
                         <img src="${imgUrl}" alt="${p.name}" class="card-img">
                         <div class="card-body">
-                            <h3 class="card-title">${p.name}</h3>
+                            <h3 class="card-title" title="${p.name}">${p.name}</h3>
                             <p class="card-desc">${p.description}</p>
                             <div class="card-footer">
                                 <span class="card-price">${parseFloat(p.price).toLocaleString('tr-TR')} ₺</span>
@@ -527,22 +492,15 @@
             });
         }
 
-        function setCategory(cat, btnElement) {
-            selectedCategory = cat;
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            if(btnElement) btnElement.classList.add('active');
-            filterProducts();
-        }
-
         function filterProducts() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const allProducts = getProducts();
             
-            const filtered = allProducts.filter(p => {
-                const matchesSearch = p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query);
-                const matchesCategory = selectedCategory === 'hepsi' || p.category === selectedCategory;
-                return matchesSearch && matchesCategory;
-            });
+            const filtered = allProducts.filter(p => 
+                p.name.toLowerCase().includes(query) || 
+                p.description.toLowerCase().includes(query) ||
+                (p.category && p.category.toLowerCase().includes(query))
+            );
 
             renderProducts(filtered);
         }
