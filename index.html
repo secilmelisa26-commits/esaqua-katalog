@@ -432,4 +432,239 @@
             "Bitki & Akvaryum Malzemeleri": "https://images.unsplash.com/photo-1516550893923-42d28e5677af?auto=format&fit=crop&w=500&q=80"
         };
 
-        const
+        const initialProducts = [
+            {
+                id: 1,
+                category: "Lepistes & Canlı Doğuran Türleri",
+                name: "Full Red Lepistes",
+                description: "Canlı doğuran türlerin en gösterişli üyesi.",
+                price: 50,
+                inStock: true,
+                image: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 2,
+                category: "Cüce Ciklet Türleri",
+                name: "Apistogramma Kakadu",
+                description: "Gösterişli sırt yüzgeci ve renkleri ile cüce ciklet.",
+                price: 150,
+                inStock: true,
+                image: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 3,
+                category: "Ciklet Türleri",
+                name: "Oscar (Astronot)",
+                description: "Zeki ve avcı büyük boy Güney Amerika cikleti.",
+                price: 250,
+                inStock: true,
+                image: "https://images.unsplash.com/photo-1548407260-da850faa41e3?auto=format&fit=crop&w=600&q=80"
+            }
+        ];
+
+        function getProducts() {
+            const STORAGE_KEY = 'esaqua_fish_list_v10';
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                return JSON.parse(stored);
+            } else {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(initialProducts));
+                return initialProducts;
+            }
+        }
+
+        function saveProducts(products) {
+            const STORAGE_KEY = 'esaqua_fish_list_v10';
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+            if (currentCategory) {
+                openCategory(currentCategory);
+            } else {
+                showCategories();
+            }
+        }
+
+        function showCategories() {
+            currentCategory = null;
+            document.getElementById('categoryGrid').style.display = 'grid';
+            document.getElementById('productGrid').style.display = 'none';
+            document.getElementById('backBtn').style.display = 'none';
+            document.getElementById('sectionTitle').textContent = 'Kategoriler';
+            document.getElementById('searchInput').value = '';
+
+            const products = getProducts();
+            const catGrid = document.getElementById('categoryGrid');
+            catGrid.innerHTML = '';
+
+            Object.keys(CATEGORIES_CONFIG).forEach(catName => {
+                const count = products.filter(p => p.category === catName).length;
+                const img = CATEGORIES_CONFIG[catName];
+
+                const cardHtml = `
+                    <div class="category-card" onclick="openCategory('${catName}')">
+                        <img src="${img}" alt="${catName}" class="category-card-img">
+                        <div class="category-card-body">
+                            <div class="category-card-title">${catName}</div>
+                            <div class="category-card-count">${count} Çeşit Ürün</div>
+                        </div>
+                    </div>
+                `;
+                catGrid.innerHTML += cardHtml;
+            });
+        }
+
+        function openCategory(categoryName) {
+            currentCategory = categoryName;
+            document.getElementById('categoryGrid').style.display = 'none';
+            document.getElementById('productGrid').style.display = 'grid';
+            document.getElementById('backBtn').style.display = 'inline-block';
+            document.getElementById('sectionTitle').textContent = categoryName;
+
+            const products = getProducts().filter(p => p.category === categoryName);
+            renderProducts(products);
+        }
+
+        function renderProducts(products) {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+
+            if (products.length === 0) {
+                grid.innerHTML = `<div class="no-result">Bu kategoride henüz ürün bulunmuyor. Yönetici panelinden ekleyebilirsiniz.</div>`;
+                return;
+            }
+
+            products.forEach(p => {
+                const imgUrl = p.image || 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80';
+                const actionButtons = isAdminLoggedIn ? `
+                    <div class="card-actions">
+                        <button class="btn-action btn-edit" onclick="startEditProduct(${p.id})">Düzenle</button>
+                        <button class="btn-action btn-delete" onclick="deleteProduct(${p.id})">Sil</button>
+                    </div>
+                ` : '';
+
+                const stockBadge = p.inStock !== false 
+                    ? `<span class="stock-badge stock-in">Var</span>` 
+                    : `<span class="stock-badge stock-out">Yok</span>`;
+
+                const cardHtml = `
+                    <div class="card">
+                        ${stockBadge}
+                        <img src="${imgUrl}" alt="${p.name}" class="card-img">
+                        <div class="card-body">
+                            <h3 class="card-title" title="${p.name}">${p.name}</h3>
+                            <p class="card-desc">${p.description}</p>
+                            <div class="card-footer">
+                                <span class="card-price">${parseFloat(p.price).toLocaleString('tr-TR')} ₺</span>
+                                ${actionButtons}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += cardHtml;
+            });
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (query === '') {
+                if (currentCategory) {
+                    openCategory(currentCategory);
+                } else {
+                    showCategories();
+                }
+                return;
+            }
+
+            document.getElementById('categoryGrid').style.display = 'none';
+            document.getElementById('productGrid').style.display = 'grid';
+            document.getElementById('backBtn').style.display = 'inline-block';
+            document.getElementById('sectionTitle').textContent = 'Arama Sonuçları';
+
+            const allProducts = getProducts();
+            const filtered = allProducts.filter(p => 
+                p.name.toLowerCase().includes(query) || 
+                p.description.toLowerCase().includes(query) ||
+                (p.category && p.category.toLowerCase().includes(query))
+            );
+
+            renderProducts(filtered);
+        }
+
+        function handleAdminToggle() {
+            const panel = document.getElementById('adminPanel');
+            if (!isAdminLoggedIn) {
+                const password = prompt("Yönetici Panelini açmak için şifreyi giriniz:");
+                if (password === ADMIN_PASSWORD) {
+                    isAdminLoggedIn = true;
+                    panel.classList.add('active');
+                    alert("Yönetici girişi başarılı!");
+                    if (currentCategory) openCategory(currentCategory); else showCategories();
+                } else if (password !== null) {
+                    alert("Hatalı şifre!");
+                }
+            } else {
+                panel.classList.toggle('active');
+                if (!panel.classList.contains('active')) resetForm();
+            }
+        }
+
+        function handleSaveFish(event) {
+            event.preventDefault();
+            const editingId = document.getElementById('editingProductId').value;
+            const category = document.getElementById('fishCategory').value;
+            const name = document.getElementById('fishName').value;
+            const description = document.getElementById('fishDesc').value;
+            const price = parseFloat(document.getElementById('fishPrice').value);
+            const inStock = document.getElementById('fishStock').value === 'in_stock';
+            const image = document.getElementById('fishImage').value;
+
+            let products = getProducts();
+            if (editingId) {
+                products = products.map(p => p.id == editingId ? { id: Number(editingId), category, name, description, price, inStock, image } : p);
+            } else {
+                products.push({ id: Date.now(), category, name, description, price, inStock, image });
+            }
+
+            saveProducts(products);
+            resetForm();
+            document.getElementById('adminPanel').classList.remove('active');
+        }
+
+        function startEditProduct(id) {
+            const products = getProducts();
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+
+            document.getElementById('editingProductId').value = product.id;
+            document.getElementById('fishCategory').value = product.category;
+            document.getElementById('fishName').value = product.name;
+            document.getElementById('fishDesc').value = product.description;
+            document.getElementById('fishPrice').value = product.price;
+            document.getElementById('fishStock').value = product.inStock !== false ? 'in_stock' : 'out_of_stock';
+            document.getElementById('fishImage').value = product.image || '';
+
+            document.getElementById('formTitle').textContent = 'Balık Bilgisini Güncelle';
+            document.getElementById('submitBtn').textContent = 'Kayıt Güncelle';
+
+            const panel = document.getElementById('adminPanel');
+            if (!panel.classList.contains('active')) panel.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Bu balığı silmek istediğinize emin misiniz?')) {
+                const products = getProducts().filter(p => p.id !== id);
+                saveProducts(products);
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('fishForm').reset();
+            document.getElementById('editingProductId').value = '';
+            document.getElementById('formTitle').textContent = 'Yeni Balık Ekle';
+            document.getElementById('submitBtn').textContent = 'Kataloğa Kaydet';
+        }
+
+        document.addEventListener('DOMContentLoaded', showCategories);
+    </script>
+</body>
+</html>
