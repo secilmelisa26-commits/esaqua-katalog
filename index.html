@@ -421,16 +421,16 @@
         let isAdminLoggedIn = false;
         let currentCategory = null;
 
-        const CATEGORIES_CONFIG = {
-            "Lepistes & Canlı Doğuran Türleri": "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=500&q=80",
-            "Cüce Ciklet Türleri": "https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=500&q=80",
-            "Tetra & Sürü Balıkları": "https://images.unsplash.com/photo-1520301255226-bf5f144451c1?auto=format&fit=crop&w=500&q=80",
-            "Ciklet Türleri": "https://images.unsplash.com/photo-1548407260-da850faa41e3?auto=format&fit=crop&w=500&q=80",
-            "Vatoz, Çöpçü & Dip Balıkları": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=500&q=80",
-            "Japon Balıkları": "https://images.unsplash.com/photo-1524704796725-9fc80448d2b2?auto=format&fit=crop&w=500&q=80",
-            "Betalar": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=500&q=80",
-            "Bitki & Akvaryum Malzemeleri": "https://images.unsplash.com/photo-1516550893923-42d28e5677af?auto=format&fit=crop&w=500&q=80"
-        };
+        const CATEGORIES_LIST = [
+            "Lepistes & Canlı Doğuran Türleri",
+            "Cüce Ciklet Türleri",
+            "Tetra & Sürü Balıkları",
+            "Ciklet Türleri",
+            "Vatoz, Çöpçü & Dip Balıkları",
+            "Japon Balıkları",
+            "Betalar",
+            "Bitki & Akvaryum Malzemeleri"
+        ];
 
         const initialProducts = [
             {
@@ -463,7 +463,7 @@
         ];
 
         function getProducts() {
-            const STORAGE_KEY = 'esaqua_fish_list_v11';
+            const STORAGE_KEY = 'esaqua_fish_list_v12';
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 return JSON.parse(stored);
@@ -474,7 +474,7 @@
         }
 
         function saveProducts(products) {
-            const STORAGE_KEY = 'esaqua_fish_list_v11';
+            const STORAGE_KEY = 'esaqua_fish_list_v12';
             localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
             if (currentCategory) {
                 openCategory(currentCategory);
@@ -495,13 +495,19 @@
             const catGrid = document.getElementById('categoryGrid');
             catGrid.innerHTML = '';
 
-            Object.keys(CATEGORIES_CONFIG).forEach(catName => {
-                const count = products.filter(p => p.category === catName).length;
-                const img = CATEGORIES_CONFIG[catName];
+            CATEGORIES_LIST.forEach(catName => {
+                const catProducts = products.filter(p => p.category === catName);
+                const count = catProducts.length;
+
+                // Kategori kapağı: O kategoride ürün varsa ilk ürünün resmi, yoksa varsayılan resim
+                let coverImg = "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=500&q=80";
+                if (count > 0 && catProducts[0].image) {
+                    coverImg = catProducts[0].image;
+                }
 
                 const cardHtml = `
                     <div class="category-card" onclick="openCategory('${catName}')">
-                        <img src="${img}" alt="${catName}" class="category-card-img">
+                        <img src="${coverImg}" alt="${catName}" class="category-card-img">
                         <div class="category-card-body">
                             <div class="category-card-title">${catName}</div>
                             <div class="category-card-count">${count} Çeşit Ürün</div>
@@ -664,12 +670,7 @@
             document.getElementById('submitBtn').textContent = 'Kataloğa Kaydet';
         }
 
-        // Sayfa yüklendiğinde eski hafızayı zorla temizle ve kategorileri göster
         document.addEventListener('DOMContentLoaded', () => {
-            if (!localStorage.getItem('esaqua_init_v11')) {
-                localStorage.removeItem('esaqua_fish_list_v10');
-                localStorage.setItem('esaqua_init_v11', 'true');
-            }
             showCategories();
         });
     </script>
