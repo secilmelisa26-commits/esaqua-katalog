@@ -463,7 +463,7 @@
         ];
 
         function getProducts() {
-            const STORAGE_KEY = 'esaqua_fish_list_v10';
+            const STORAGE_KEY = 'esaqua_fish_list_v11';
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 return JSON.parse(stored);
@@ -474,7 +474,7 @@
         }
 
         function saveProducts(products) {
-            const STORAGE_KEY = 'esaqua_fish_list_v10';
+            const STORAGE_KEY = 'esaqua_fish_list_v11';
             localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
             if (currentCategory) {
                 openCategory(currentCategory);
@@ -664,7 +664,14 @@
             document.getElementById('submitBtn').textContent = 'Kataloğa Kaydet';
         }
 
-        document.addEventListener('DOMContentLoaded', showCategories);
+        // Sayfa yüklendiğinde eski hafızayı zorla temizle ve kategorileri göster
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('esaqua_init_v11')) {
+                localStorage.removeItem('esaqua_fish_list_v10');
+                localStorage.setItem('esaqua_init_v11', 'true');
+            }
+            showCategories();
+        });
     </script>
 </body>
 </html>
