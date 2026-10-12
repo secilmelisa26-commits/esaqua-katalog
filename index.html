@@ -1,12 +1,15 @@
 
 
-
-           <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Esaqua Petshop - Akvaryum Balıkları Kataloğu</title>
+    
+    <!-- GOOGLE VE DİĞER ARAMA MOTORLARINDA ÇIKMAMASI İÇİN ÖZEL ENGELLEYİCİ -->
+    <meta name="robots" content="noindex, nofollow">
+    
+    <title>Esaqua Petshop - Özel Canlı Kataloğu</title>
     <style>
         :root {
             --primary: #0088cc;
@@ -75,7 +78,6 @@
             padding: 0 1rem;
         }
 
-        /* Arama ve Filtreler */
         .controls-container {
             display: flex;
             flex-direction: column;
@@ -293,16 +295,20 @@
     </header>
 
     <div class="container">
-        <!-- Arama ve Filtreleme -->
+        <!-- Arama ve Filtreleme (Varsayılan olarak Lepistes seçili başlar) -->
         <div class="controls-container">
             <input type="text" id="searchInput" class="search-input" placeholder="🔍 Balık adı veya türü ara..." oninput="filterProducts()">
             
             <div class="category-tabs">
-                <button class="tab-btn active" onclick="setCategory('hepsi', this)">Tümü</button>
-                <button class="tab-btn" onclick="setCategory('Lepistes Türleri', this)">Lepistes Türleri</button>
+                <button class="tab-btn active" onclick="setCategory('Lepistes & Canlı Doğuranlar', this)">🐟 Lepistes & Canlı Doğuran</button>
+                <button class="tab-btn" onclick="setCategory('hepsi', this)">Tüm Balıklar</button>
                 <button class="tab-btn" onclick="setCategory('Cüce Ciklet Türleri', this)">Cüce Cikletler</button>
                 <button class="tab-btn" onclick="setCategory('Channa / Yılanbaş Türleri', this)">Channa / Yılanbaş</button>
-                <button class="tab-btn" onclick="setCategory('Vatoz & Salyangoz', this)">Vatoz & Salyangoz</button>
+                <button class="tab-btn" onclick="setCategory('Tetra & Sürü Balıkları', this)">Tetra & Sürü</button>
+                <button class="tab-btn" onclick="setCategory('Cichlid / Ciklet Türleri', this)">Ciklet Türleri (Oscar vb.)</button>
+                <button class="tab-btn" onclick="setCategory('Vatoz, Çöpçü & Salyangoz', this)">Vatoz & Salyangoz</button>
+                <button class="tab-btn" onclick="setCategory('Japon & Betta', this)">Japon & Betta</button>
+                <button class="tab-btn" onclick="setCategory('Bitki & Malzemeler', this)">Bitki & Malzeme</button>
             </div>
         </div>
 
@@ -314,11 +320,14 @@
                 <div class="form-group">
                     <label for="fishCategory">Balık Grubu / Türü</label>
                     <select id="fishCategory" required>
-                        <option value="Lepistes Türleri">Lepistes Türleri</option>
+                        <option value="Lepistes & Canlı Doğuranlar">Lepistes & Canlı Doğuranlar</option>
                         <option value="Cüce Ciklet Türleri">Cüce Ciklet Türleri</option>
                         <option value="Channa / Yılanbaş Türleri">Channa / Yılanbaş Türleri</option>
-                        <option value="Vatoz & Salyangoz">Vatoz & Salyangoz</option>
-                        <option value="Diğer Türler">Diğer Türler</option>
+                        <option value="Tetra & Sürü Balıkları">Tetra & Sürü Balıkları</option>
+                        <option value="Cichlid / Ciklet Türleri">Cichlid / Ciklet Türleri (Oscar vb.)</option>
+                        <option value="Vatoz, Çöpçü & Salyangoz">Vatoz, Çöpçü & Salyangoz</option>
+                        <option value="Japon & Betta">Japon & Betta</option>
+                        <option value="Bitki & Malzemeler">Bitki & Malzemeler</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -346,16 +355,19 @@
     </div>
 
     <script>
+        // Yönetici Şifreniz (İstediğin zaman değiştirebilirsin)
         const ADMIN_PASSWORD = "1234";
         let isAdminLoggedIn = false;
-        let selectedCategory = 'hepsi';
+        
+        // SİTE AÇILDIĞINDA İLK GELECEK KATEGORİ (Lepistes)
+        let selectedCategory = 'Lepistes & Canlı Doğuranlar';
 
         const initialProducts = [
             {
                 id: 1,
-                category: "Lepistes Türleri",
+                category: "Lepistes & Canlı Doğuranlar",
                 name: "Full Red Lepistes",
-                description: "Akvaryuma harika bir kırmızı renk katan, canlı doğuran türlerin en popüler üyelerinden biri.",
+                description: "Akvaryuma harika bir kırmızı renk katan, canlı doğuran türlerin en popüler ve gösterişli üyelerinden biri.",
                 price: 50,
                 image: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=600&q=80"
             },
@@ -378,17 +390,17 @@
         ];
 
         function getProducts() {
-            const stored = localStorage.getItem('esaqua_fish_list_v2');
+            const stored = localStorage.getItem('esaqua_fish_list_v4');
             if (stored) {
                 return JSON.parse(stored);
             } else {
-                localStorage.setItem('esaqua_fish_list_v2', JSON.stringify(initialProducts));
+                localStorage.setItem('esaqua_fish_list_v4', JSON.stringify(initialProducts));
                 return initialProducts;
             }
         }
 
         function saveProducts(products) {
-            localStorage.setItem('esaqua_fish_list_v2', JSON.stringify(products));
+            localStorage.setItem('esaqua_fish_list_v4', JSON.stringify(products));
             filterProducts();
         }
 
@@ -397,7 +409,7 @@
             grid.innerHTML = '';
 
             if (products.length === 0) {
-                grid.innerHTML = `<div class="no-result">Aramanızla veya seçtiğiniz kategoriyle eşleşen balık bulunamadı.</div>`;
+                grid.innerHTML = `<div class="no-result">Bu kategoride henüz balık bulunmuyor veya aramanızla eşleşen sonuç yok. Yönetici panelinden ekleyebilirsiniz.</div>`;
                 return;
             }
 
@@ -499,7 +511,7 @@
             if (!product) return;
 
             document.getElementById('editingProductId').value = product.id;
-            document.getElementById('fishCategory').value = product.category || 'Lepistes Türleri';
+            document.getElementById('fishCategory').value = product.category || 'Lepistes & Canlı Doğuranlar';
             document.getElementById('fishName').value = product.name;
             document.getElementById('fishDesc').value = product.description;
             document.getElementById('fishPrice').value = product.price;
@@ -533,3 +545,4 @@
     </script>
 </body>
 </html>
+         
