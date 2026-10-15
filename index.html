@@ -354,7 +354,7 @@
         <!-- Navigasyon Başlığı -->
         <div class="nav-header">
             <span id="sectionTitle" class="section-title">Kategoriler</span>
-            <button id="backBtn" class="back-btn" onclick="showCategories()">← Tüm Kategoriler</button>
+            <button id="backBtn" class="back-btn" onclick="goBackToCategories()">← Tüm Kategoriler</button>
         </div>
 
         <!-- Şifreli Yönetici Paneli -->
@@ -477,13 +477,16 @@
             const STORAGE_KEY = 'esaqua_fish_list_v12';
             localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
             if (currentCategory) {
-                openCategory(currentCategory);
+                openCategory(currentCategory, false);
             } else {
-                showCategories();
+                showCategories(false);
             }
         }
 
-        function showCategories() {
+        function showCategories(pushState = true) {
+            if (pushState && currentCategory !== null) {
+                history.pushState({ page: 'categories' }, '', window.location.pathname);
+            }
             currentCategory = null;
             document.getElementById('categoryGrid').style.display = 'grid';
             document.getElementById('productGrid').style.display = 'none';
@@ -499,7 +502,6 @@
                 const catProducts = products.filter(p => p.category === catName);
                 const count = catProducts.length;
 
-                // Kategori kapağı: O kategoride ürün varsa ilk ürünün resmi, yoksa varsayılan resim
                 let coverImg = "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=500&q=80";
                 if (count > 0 && catProducts[0].image) {
                     coverImg = catProducts[0].image;
@@ -518,7 +520,10 @@
             });
         }
 
-        function openCategory(categoryName) {
+        function openCategory(categoryName, pushState = true) {
+            if (pushState) {
+                history.pushState({ page: 'category', name: categoryName }, '', window.location.pathname);
+            }
             currentCategory = categoryName;
             document.getElementById('categoryGrid').style.display = 'none';
             document.getElementById('productGrid').style.display = 'grid';
@@ -528,6 +533,23 @@
             const products = getProducts().filter(p => p.category === categoryName);
             renderProducts(products);
         }
+
+        function goBackToCategories() {
+            if (window.history.state && window.history.state.page === 'category') {
+                window.history.back();
+            } else {
+                showCategories(false);
+            }
+        }
+
+        // TELEFON VE TARAYICI GERİ TUŞUNU YAKALAMA
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.page === 'category') {
+                openCategory(event.state.name, false);
+            } else {
+                showCategories(false);
+            }
+        });
 
         function renderProducts(products) {
             const grid = document.getElementById('productGrid');
@@ -573,9 +595,9 @@
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             if (query === '') {
                 if (currentCategory) {
-                    openCategory(currentCategory);
+                    openCategory(currentCategory, false);
                 } else {
-                    showCategories();
+                    showCategories(false);
                 }
                 return;
             }
@@ -603,7 +625,7 @@
                     isAdminLoggedIn = true;
                     panel.classList.add('active');
                     alert("Yönetici girişi başarılı!");
-                    if (currentCategory) openCategory(currentCategory); else showCategories();
+                    if (currentCategory) openCategory(currentCategory, false); else showCategories(false);
                 } else if (password !== null) {
                     alert("Hatalı şifre!");
                 }
@@ -671,7 +693,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            showCategories();
+            history.replaceState({ page: 'categories' }, '', window.location.pathname);
+            showCategories(false);
         });
     </script>
 </body>
