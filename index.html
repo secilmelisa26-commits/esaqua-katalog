@@ -368,4 +368,194 @@
             console.log("Firebase yerel modda çalışıyor.");
         }
 
-        // TAM OLARAK 7 KATEG
+        // TAM OLARAK 7 KATEGORİ VE RESİMLERİ
+        const categoriesList = [
+            { name: "Lepistes & Canlı Doğuranlar", img: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=500&auto=format&fit=crop&q=60" },
+            { name: "Ciklet Türleri", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&auto=format&fit=crop&q=60" },
+            { name: "Tetra & Sürü Balıkları", img: "https://images.unsplash.com/photo-1520315342629-6ea920342047?w=500&auto=format&fit=crop&q=60" },
+            { name: "Diğer Renkli & Karma Balıklar", img: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=500&auto=format&fit=crop&q=60" },
+            { name: "Vatoz, Çöpçü & Dip Balıkları", img: "https://images.unsplash.com/photo-1534043464124-3be32fe000c9?w=500&auto=format&fit=crop&q=60" },
+            { name: "Betalar & Omurgasızlar", img: "https://images.unsplash.com/photo-1548425804-d57262f3f9f7?w=500&auto=format&fit=crop&q=60" },
+            { name: "Akvaryum Malzemeleri & Bitkiler", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=500&auto=format&fit=crop&q=60" }
+        ];
+
+        let products = JSON.parse(localStorage.getItem('esaqua_products')) || [];
+        let uploadedBase64Image = "";
+
+        window.onload = function() {
+            renderCategories();
+            syncWithFirebase();
+        };
+
+        // Firebase ile Gerçek Zamanlı Senkronizasyon (Herkes Eşit Görür)
+        function syncWithFirebase() {
+            if(db) {
+                db.ref('products').on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if(data) {
+                        products = Object.values(data);
+                        localStorage.setItem('esaqua_products', JSON.stringify(products));
+                        const currentCat = document.getElementById('currentCategoryTitle').innerText;
+                        if(currentCat) renderProducts(currentCat);
+                    }
+                });
+            }
+        }
+
+        // 7 Ana Kategori Kartını Çiz
+        function renderCategories() {
+            const grid = document.getElementById('categoryGrid');
+            grid.innerHTML = '';
+            categoriesList.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'category-card';
+                card.onclick = () => openCategory(c.name);
+                card.innerHTML = `
+                    <img src="${c.img}" alt="${c.name}" class="category-img">
+                    <div class="category-info">
+                        <div class="category-title">${c.name}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Kategoriye Giriş
+        function openCategory(catName) {
+            document.getElementById('categorySection').style.display = 'none';
+            document.getElementById('productSection').style.display = 'block';
+            document.getElementById('backBtn').style.display = 'block';
+            document.getElementById('currentCategoryTitle').innerText = catName;
+
+            history.pushState({ page: 'category' }, '');
+            renderProducts(catName);
+        }
+
+        // Ana Ekran Dönüş
+        function goHome() {
+            document.getElementById('categorySection').style.display = 'block';
+            document.getElementById('productSection').style.display = 'none';
+            document.getElementById('backBtn').style.display = 'none';
+        }
+
+        window.onpopstate = function() { goHome(); };
+
+        // Ürünleri Göster
+        function renderProducts(catName) {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+            const filtered = products.filter(p => p.category === catName);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="empty-state">Bu kategoride henüz canlı / ürün bulunmuyor.</div>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                const imgSrc = p.image && p.image.trim() !== '' ? p.image : 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=500&auto=format&fit=crop&q=60';
+                const stockClass = p.stock === 'Tükendi' ? 'out-stock' : 'in-stock';
+
+                card.innerHTML = `
+                    <img src="${imgSrc}" alt="${p.title}" class="product-img">
+                    <div class="product-body">
+                        <h3 class="product-title">${p.title}</h3>
+                        <p class="product-desc">${p.desc || ''}</p>
+                        <div class="product-price">${p.price}</div>
+                        <div><span class="stock-badge ${stockClass}">${p.stock || 'Stokta Var'}</span></div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Resim Dosyası Okuma (Galeriden / Bilgisayardan)
+        function convertImageToBase64(fileInput) {
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedBase64Image = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function openAdminLogin() { document.getElementById('loginModal').classList.add('is-open'); }
+        function closeModals() {
+            document.getElementById('loginModal').classList.remove('is-open');
+            document.getElementById('adminModal').classList.remove('is-open');
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        function checkPassword() {
+            if(document.getElementById('adminPassword').value === '123') {
+                closeModals();
+                document.getElementById('adminModal').classList.add('is-open');
+                renderAdminList();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        // Yeni Ürün Kaydet (Hem Yerel Hem Canlı Veritabanına)
+        function handleAddNewProduct(e) {
+            e.preventDefault();
+            const urlImg = document.getElementById('newImage').value;
+            const finalImage = uploadedBase64Image || urlImg || "";
+            const id = Date.now();
+
+            const newProduct = {
+                id: id,
+                title: document.getElementById('newTitle').value,
+                category: document.getElementById('newCategory').value,
+                price: document.getElementById('newPrice').value,
+                stock: document.getElementById('newStock').value,
+                image: finalImage,
+                desc: document.getElementById('newDesc').value
+            };
+
+            products.unshift(newProduct);
+            localStorage.setItem('esaqua_products', JSON.stringify(products));
+
+            if(db) {
+                db.ref('products/' + id).set(newProduct);
+            }
+
+            document.getElementById('addProductForm').reset();
+            uploadedBase64Image = "";
+            renderAdminList();
+            alert('Ürün eklendi!');
+        }
+
+        function renderAdminList() {
+            const listDiv = document.getElementById('adminProductList');
+            listDiv.innerHTML = '';
+            if(products.length === 0) {
+                listDiv.innerHTML = '<p style="color:var(--text-muted); font-size:0.8rem;">Ürün yok.</p>';
+                return;
+            }
+            products.forEach(p => {
+                const row = document.createElement('div');
+                row.className = 'admin-row';
+                row.innerHTML = `
+                    <div><strong>${p.title}</strong> (${p.price})</div>
+                    <button class="btn-delete" onclick="deleteProduct(${p.id})">Sil</button>
+                `;
+                listDiv.appendChild(row);
+            });
+        }
+
+        function deleteProduct(id) {
+            if(confirm('Ürünü silmek istediğinize emin misiniz?')) {
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem('esaqua_products', JSON.stringify(products));
+                if(db) db.ref('products/' + id).remove();
+                renderAdminList();
+            }
+        }
+    </script>
+</body>
+</html>
