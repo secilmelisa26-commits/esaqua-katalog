@@ -3,137 +3,493 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Esaqua Petshop - Ürün Kataloğu</title>
+    <!-- Google aramalarına kapalı olması için robot meta etiketi -->
+    <meta name="robots" content="noindex, nofollow">
+    <title>Esaqua Petshop - Akvaryum Canlıları Kataloğu</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f7f6; }
-        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        select, input, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .filter-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
-        .filter-btn { width: auto; padding: 8px 16px; background-color: #e0e0e0; border: none; cursor: pointer; border-radius: 20px; }
-        .filter-btn.active { background-color: #007bff; color: white; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        .product-card { border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; text-align: center; background: #fafafa; }
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --accent: #0ea5e9;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; padding-bottom: 50px; }
+
+        header {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        header h1 { font-size: 2rem; margin-bottom: 0.5rem; letter-spacing: 1px; }
+        header p { color: #94a3b8; font-size: 1rem; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+
+        /* Üst Kontrol Çubuğu */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0 1rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: white;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-box input:focus { border-color: var(--primary); }
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .admin-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .admin-btn:hover { background-color: var(--primary-dark); }
+
+        /* Kategori Filtre Butonları */
+        .categories-scroll {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.75rem;
+            margin-bottom: 2rem;
+            white-space: nowrap;
+            scrollbar-width: thin;
+        }
+        .cat-btn {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        .cat-btn:hover, .cat-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Ürün Listesi Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08);
+        }
+
+        .product-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background-color: #e2e8f0;
+        }
+
+        .product-body {
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-category {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+            letter-spacing: 0.5px;
+        }
+
+        .product-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .product-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border);
+            padding-top: 0.75rem;
+            margin-top: auto;
+        }
+
+        .product-price {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #059669;
+        }
+
+        /* Modal Pencereler (Şifre & Yönetim) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .close-modal {
+            position: absolute;
+            right: 1rem; top: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.3rem; font-weight: 600; font-size: 0.9rem; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem;
+        }
+        .form-group textarea { resize: vertical; height: 80px; }
+
+        .btn-submit {
+            background: #059669; color: white; border: none; padding: 0.75rem 1rem; border-radius: 8px; width: 100%; font-weight: 600; cursor: pointer;
+        }
+        .btn-submit:hover { background: #047857; }
+
+        .admin-product-row {
+            display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border);
+        }
+        .btn-delete {
+            background: #dc2626; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+        }
+        .btn-delete:hover { background: #b91c1c; }
+
+        .empty-state { text-align: center; padding: 3rem; color: var(--text-muted); grid-column: 1 / -1; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Esaqua Petshop - Yeni Ürün Ekle</h2>
-    
-    <!-- ÜRÜN EKLEME FORMU -->
-    <form id="productForm">
-        <div class="form-group">
-            <label for="fishName">Balık / Ürün Adı</label>
-            <input type="text" id="fishName" placeholder="Örn: Celebes Rainbow / Cüce Gurami" required>
+    <header>
+        <div class="container">
+            <h1>Esaqua Petshop</h1>
+            <p>Canlı Akvaryum Balıkları ve Bitki Kataloğu</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Kontrol Çubuğu -->
+        <div class="top-bar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Balık veya ürün adı ara..." oninput="filterProducts()">
+            </div>
+            <button class="admin-btn" onclick="openAdminLogin()">Yönetim Paneli</button>
         </div>
 
-        <div class="form-group">
-            <label for="fishCategory">Kategori Seçin</label>
-            <select id="fishCategory" required>
-                <option value="canli-doguran">Lepistes & Canlı Doğuran Türleri</option>
-                <option value="cuce-ciklet">Cüce Ciklet Türleri</option>
-                <option value="tetra-suru">Tetra & Sürü Balıkları</option>
-                <option value="ciklet">Ciklet Türleri (Oscar vb.)</option>
-                <option value="dip-baliklari">Vatoz, Çöpçü & Dip Balıkları</option>
-                
-                <!-- DÜZELTİLEN YENİ KATEGORİ -->
-                <option value="karma-baliklar">Diğer Renkli & Karma Balıklar</option>
-                
-                <option value="japon">Japon Balıkları</option>
-                <option value="omurgasizlar">Omurgasızlar (Salyangoz, Karides vb.)</option>
-                <option value="betalar">Betalar</option>
-                <option value="bitki-malzeme">Bitki & Akvaryum Malzemeleri</option>
-            </select>
+        <!-- Kategori Filtre Butonları -->
+        <div class="categories-scroll" id="categoryButtons">
+            <button class="cat-btn active" onclick="setCategory('Tümü')">Tümü</button>
+            <button class="cat-btn" onclick="setCategory('Lepistes & Canlı Doğuran Türleri')">Lepistes & Canlı Doğuranlar</button>
+            <button class="cat-btn" onclick="setCategory('Cüce Ciklet Türleri')">Cüce Cikletler</button>
+            <button class="cat-btn" onclick="setCategory('Tetra & Sürü Balıkları')">Tetra & Sürü</button>
+            <button class="cat-btn" onclick="setCategory('Ciklet Türleri')">Ciklet Türleri</button>
+            <button class="cat-btn" onclick="setCategory('Vatoz, Çöpçü & Dip Balıkları')">Dip Balıkları</button>
+            <button class="cat-btn" onclick="setCategory('Diğer Renkli & Karma Balıklar')">Diğer Renkli & Karma</button>
+            <button class="cat-btn" onclick="setCategory('Japon Balıkları')">Japon Balıkları</button>
+            <button class="cat-btn" onclick="setCategory('Omurgasızlar')">Omurgasızlar</button>
+            <button class="cat-btn" onclick="setCategory('Betalar')">Betalar</button>
+            <button class="cat-btn" onclick="setCategory('Bitki & Akvaryum Malzemeleri')">Bitki & Malzeme</button>
         </div>
 
-        <button type="submit" style="background-color: #28a745; color: white; font-weight: bold;">Ürünü Kataloğa Ekle</button>
-    </form>
+        <!-- Ürün Listeleme Alanı -->
+        <div class="product-grid" id="productGrid">
+            <!-- Ürünler JavaScript ile yüklenecek -->
+        </div>
+    </main>
 
-    <hr style="margin: 30px 0;">
-
-    <h2>Katalog & Kategoriler</h2>
-
-    <!-- FİLTRELEME BUTONLARI -->
-    <div class="filter-buttons">
-        <button class="filter-btn active" onclick="filterCategory('all')">Tümü</button>
-        <button class="filter-btn" onclick="filterCategory('canli-doguran')">Canlı Doğuranlar</button>
-        <button class="filter-btn" onclick="filterCategory('cuce-ciklet')">Cüce Cikletler</button>
-        <button class="filter-btn" onclick="filterCategory('tetra-suru')">Tetra & Sürü</button>
-        <button class="filter-btn" onclick="filterCategory('ciklet')">Cikletler</button>
-        <button class="filter-btn" onclick="filterCategory('dip-baliklari')">Dip Balıkları</button>
-        
-        <!-- YENİ KATEGORİ FİLTRE BUTONU -->
-        <button class="filter-btn" onclick="filterCategory('karma-baliklar')">Diğer Renkli & Karma</button>
-        
-        <button class="filter-btn" onclick="filterCategory('japon')">Japon Balıkları</button>
-        <button class="filter-btn" onclick="filterCategory('omurgasizlar')">Omurgasızlar</button>
-        <button class="filter-btn" onclick="filterCategory('betalar')">Betalar</button>
-        <button class="filter-btn" onclick="filterCategory('bitki-malzeme')">Bitki & Malzeme</button>
+    <!-- Şifre Giriş Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content" style="max-width: 350px;">
+            <span class="close-modal" onclick="closeModals()">&times;</span>
+            <h3 style="margin-bottom: 1rem;">Yönetici Girişi</h3>
+            <div class="form-group">
+                <label>Şifre</label>
+                <input type="password" id="adminPassword" placeholder="Şifrenizi girin">
+            </div>
+            <button class="btn-submit" onclick="checkPassword()">Giriş Yap</button>
+            <p id="loginError" style="color: #dc2626; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; display: none;">Hatalı şifre!</p>
+        </div>
     </div>
 
-    <!-- ÜRÜNLERİN LİSTELENDİĞİ ALAN -->
-    <div id="productGrid" class="product-grid">
-        <!-- Eklenen balıklar dinamik olarak buraya gelecek -->
+    <!-- Yönetim Paneli Modal -->
+    <div class="modal" id="adminModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModals()">&times;</span>
+            <h2 style="margin-bottom: 1.5rem;">Ürün Yönetim Paneli</h2>
+            
+            <form id="addProductForm" onsubmit="handleAddNewProduct(event)">
+                <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--primary);">Yeni Ürün Ekle</h3>
+                <div class="form-group">
+                    <label>Ürün Adı</label>
+                    <input type="text" id="newTitle" required placeholder="Örn: Celebes Rainbow">
+                </div>
+                <div class="form-group">
+                    <label>Kategori Seçin</label>
+                    <select id="newCategory" required>
+                        <option value="Lepistes & Canlı Doğuran Türleri">Lepistes & Canlı Doğuran Türleri</option>
+                        <option value="Cüce Ciklet Türleri">Cüce Ciklet Türleri</option>
+                        <option value="Tetra & Sürü Balıkları">Tetra & Sürü Balıkları</option>
+                        <option value="Ciklet Türleri">Ciklet Türleri (Oscar vb.)</option>
+                        <option value="Vatoz, Çöpçü & Dip Balıkları">Vatoz, Çöpçü & Dip Balıkları</option>
+                        <option value="Diğer Renkli & Karma Balıklar">Diğer Renkli & Karma Balıklar</option>
+                        <option value="Japon Balıkları">Japon Balıkları</option>
+                        <option value="Omurgasızlar">Omurgasızlar (Salyangoz, Karides vb.)</option>
+                        <option value="Betalar">Betalar</option>
+                        <option value="Bitki & Akvaryum Malzemeleri">Bitki & Akvaryum Malzemeleri</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fiyat (₺)</label>
+                    <input type="text" id="newPrice" required placeholder="Örn: 75 TL">
+                </div>
+                <div class="form-group">
+                    <label>Fotoğraf URL (İsteğe Bağlı)</label>
+                    <input type="url" id="newImage" placeholder="https://... (boş bırakırsanız varsayılan görsel çıkar)">
+                </div>
+                <div class="form-group">
+                    <label>Açıklama</label>
+                    <textarea id="newDesc" placeholder="Balık hakkında kısa bilgi..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Kataloğa Ekle</button>
+            </form>
+
+            <hr style="margin: 2rem 0; border: 0; border-top: 1px solid var(--border);">
+
+            <h3>Mevcut Ürünleri Yönet</h3>
+            <div id="adminProductList" style="margin-top: 1rem; max-height: 250px; overflow-y: auto;">
+                <!-- Mevcut ürünler buraya listelenecek -->
+            </div>
+        </div>
     </div>
-</div>
 
-<!-- JAVASCRIPT KODLARI -->
-<script>
-    const products = [];
+    <script>
+        // Varsayılan Başlangıç Ürünleri
+        const defaultProducts = [
+            { id: 1, title: "Celebes Rainbow", category: "Diğer Renkli & Karma Balıklar", price: "90 ₺", image: "", desc: "Şeffaf yüzgeçleri ve zarif duruşuyla akvaryumunuza şıklık katar." },
+            { id: 2, title: "Cüce Gurami", category: "Diğer Renkli & Karma Balıklar", price: "120 ₺", image: "", desc: "Barışçıl yapısı ve üst düzey yüzme alışkanlığı ile ideal topluluk balığı." },
+            { id: 3, title: "Full Red Lepistes", category: "Lepistes & Canlı Doğuran Türleri", price: "50 ₺", image: "", desc: "Canlı renkleri ve kolay bakımıyla karma akvaryumların gözdesi." },
+            { id: 4, title: "Neon Tetra", category: "Tetra & Sürü Balıkları", price: "25 ₺", image: "", desc: "Sürü halinde gezdiğinde muazzam bir görsel şölen sunar." },
+            { id: 5, title: "L144 Cüce Vatoz", category: "Vatoz, Çöpçü & Dip Balıkları", price: "80 ₺", image: "", desc: "Yosun temizliğinin en çalışkan ve estetik yardımcısı." }
+        ];
 
-    // Form Gönderildiğinde Ürünü Kaydet
-    document.getElementById('productForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const name = document.getElementById('fishName').value;
-        const category = document.getElementById('fishCategory').value;
+        // LocalStorage'dan veri çekme veya varsayılanı yükleme
+        let products = JSON.parse(localStorage.getItem('esaqua_products')) || defaultProducts;
+        let activeCategory = 'Tümü';
 
-        // Yeni Ürün Objesi
-        const newProduct = { name, category };
-        products.push(newProduct);
-
-        // Formu temizle ve listeyi yenile
-        document.getElementById('fishName').value = '';
-        renderProducts('all');
-    });
-
-    // Ürünleri Ekrana Basma Fonksiyonu
-    function renderProducts(filter = 'all') {
-        const grid = document.getElementById('productGrid');
-        grid.innerHTML = '';
-
-        const filteredProducts = filter === 'all' 
-            ? products 
-            : products.filter(p => p.category === filter);
-
-        if (filteredProducts.length === 0) {
-            grid.innerHTML = '<p style="grid-column: 1/-1; color: #777;">Bu kategoride henüz ürün bulunmuyor.</p>';
-            return;
+        function saveToStorage() {
+            localStorage.setItem('esaqua_products', JSON.stringify(products));
         }
 
-        filteredProducts.forEach(product => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.innerHTML = `
-                <h3>${product.name}</h3>
-                <small style="color: #666;">Kategori Kodu: ${product.category}</small>
-            `;
-            grid.appendChild(card);
-        });
-    }
+        // Sayfa Yüklendiğinde
+        window.onload = function() {
+            renderProducts();
+        };
 
-    // Butonla Filtreleme Fonksiyonu
-    function filterCategory(categoryKey) {
-        // Aktif buton görünümünü değiştir
-        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
+        // Ürünleri Ekrana Çizme
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
 
-        // Ürünleri filtrele
-        renderProducts(categoryKey);
-    }
-</script>
+            grid.innerHTML = '';
 
+            const filtered = products.filter(p => {
+                const matchesCat = activeCategory === 'Tümü' || p.category === activeCategory;
+                const matchesSearch = p.title.toLowerCase().includes(searchVal) || p.desc.toLowerCase().includes(searchVal);
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="empty-state"><h3>Aradığınız kriterde ürün bulunamadı.</h3><p>Farklı bir kategori seçebilir veya aramanızı değiştirebilirsiniz.</p></div>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                
+                const imgSrc = p.image && p.image.trim() !== '' ? p.image : 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=500&auto=format&fit=crop&q=60';
+
+                card.innerHTML = `
+                    <img src="${imgSrc}" alt="${p.title}" class="product-img" onerror="this.src='https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=500&auto=format&fit=crop&q=60'">
+                    <div class="product-body">
+                        <span class="product-category">${p.category}</span>
+                        <h3 class="product-title">${p.title}</h3>
+                        <p class="product-desc">${p.desc || 'Açıklama girilmedi.'}</p>
+                        <div class="product-footer">
+                            <span class="product-price">${p.price}</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Kategori Değiştirme
+        function setCategory(cat) {
+            activeCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                if(btn.textContent.includes(cat) || (cat === 'Tümü' && btn.textContent === 'Tümü')) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            renderProducts();
+        }
+
+        function filterProducts() {
+            renderProducts();
+        }
+
+        // Modal Yönetimi
+        function openAdminLogin() {
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+
+        function closeModals() {
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('adminModal').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        // Şifre Kontrolü (Varsayılan şifre: 123 - değiştirebilirsin)
+        function checkPassword() {
+            const pass = document.getElementById('adminPassword').value;
+            if(pass === '123') {
+                closeModals();
+                document.getElementById('adminModal').style.display = 'flex';
+                renderAdminList();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        // Yeni Ürün Ekleme
+        function handleAddNewProduct(e) {
+            e.preventDefault();
+            const newProduct = {
+                id: Date.now(),
+                title: document.getElementById('newTitle').value,
+                category: document.getElementById('newCategory').value,
+                price: document.getElementById('newPrice').value,
+                image: document.getElementById('newImage').value,
+                desc: document.getElementById('newDesc').value
+            };
+
+            products.unshift(newProduct);
+            saveToStorage();
+            renderProducts();
+            renderAdminList();
+            document.getElementById('addProductForm').reset();
+            alert('Ürün başarıyla eklendi!');
+        }
+
+        // Yönetim Paneli Ürün Listesi
+        function renderAdminList() {
+            const listDiv = document.getElementById('adminProductList');
+            listDiv.innerHTML = '';
+
+            if(products.length === 0) {
+                listDiv.innerHTML = '<p style="color:var(--text-muted); font-size:0.9rem;">Henüz ürün eklenmemiş.</p>';
+                return;
+            }
+
+            products.forEach(p => {
+                const row = document.createElement('div');
+                row.className = 'admin-product-row';
+                row.innerHTML = `
+                    <div>
+                        <strong>${p.title}</strong> <small style="color:var(--text-muted);">(${p.category})</small>
+                    </div>
+                    <button class="btn-delete" onclick="deleteProduct(${p.id})">Sil</button>
+                `;
+                listDiv.appendChild(row);
+            });
+        }
+
+        // Ürün Silme
+        function deleteProduct(id) {
+            if(confirm('Bu ürünü silmek istediğinize emin misiniz?')) {
+                products = products.filter(p => p.id !== id);
+                saveToStorage();
+                renderProducts();
+                renderAdminList();
+            }
+        }
+    </script>
 </body>
 </html>
