@@ -84,6 +84,7 @@
             display: flex;
             gap: 6px;
             margin-left: auto;
+            flex-wrap: wrap;
         }
 
         .admin-btn {
@@ -335,6 +336,7 @@
         <div class="top-bar">
             <button class="back-btn" id="backBtn" onclick="goHome()">← Bütün Kategorilere Dön</button>
             <div class="admin-controls">
+                <button class="add-product-btn" id="addCategoryPhotoBtn" onclick="openCategoryPhotoModal()" style="background-color: #0284c7;">🖼️ Kategori Fotoğrafını Değiştir</button>
                 <button class="add-product-btn" id="addProductBtn" onclick="openAddProductModal()">➕ Yeni Ürün Ekle</button>
                 <button class="admin-btn" id="adminStatusBtn" onclick="openAdminLogin()">🔒 Yönetim Girişi</button>
             </div>
@@ -367,7 +369,7 @@
         </div>
     </div>
 
-    <!-- YÖNETİM MODAL -->
+    <!-- YENİ ÜRÜN EKLEME MODAL -->
     <div class="modal" id="adminModal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModals()">&times;</span>
@@ -406,7 +408,7 @@
                 </div>
                 <div class="form-group">
                     <label>🖼️ Cihazdan / Galeriden Fotoğraf Seç:</label>
-                    <input type="file" id="newFileInput" accept="image/*" onchange="convertImageToBase64(this)">
+                    <input type="file" id="newFileInput" accept="image/*" onchange="convertImageToBase64(this, 'product')">
                 </div>
                 <div class="form-group">
                     <label>Veya Fotoğraf Linki (URL):</label>
@@ -418,6 +420,35 @@
                 </div>
                 <button type="submit" id="btnSubmitForm" class="btn-submit">Kataloğa Kaydet</button>
                 <button type="button" id="btnCancelEdit" class="btn-cancel-edit" onclick="resetProductForm()">Düzenlemeyi İptal Et</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- KATEGORİ FOTOĞRAFI DEĞİŞTİRME MODAL -->
+    <div class="modal" id="categoryPhotoModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModals()">&times;</span>
+            <h3 style="font-size: 0.95rem; margin-bottom: 0.8rem; color: var(--primary);">Kategori Fotoğrafını Değiştir</h3>
+            
+            <form onsubmit="handleCategoryPhotoUpdate(event)">
+                <div class="form-group">
+                    <label>Hangi Kategorinin Fotoğrafı Değişecek?</label>
+                    <select id="targetCategorySelect" required>
+                        <option value="Lepistes & Canlı Doğuranlar">Lepistes & Canlı Doğuranlar</option>
+                        <option value="Tetra & Sürü Balıkları">Tetra & Sürü Balıkları</option>
+                        <option value="Cüce Ciklet Türleri">Cüce Ciklet Türleri</option>
+                        <option value="Ciklet Türleri">Ciklet Türleri</option>
+                        <option value="Diğer Renkli & Karma Balıklar">Diğer Renkli & Karma Balıklar</option>
+                        <option value="Vatoz, Çöpçü & Dip Balıkları">Vatoz, Çöpçü & Dip Balıkları</option>
+                        <option value="Betalar & Omurgasızlar">Betalar & Omurgasızlar</option>
+                        <option value="Bitki ve Ürün Çeşitleri">Bitki ve Ürün Çeşitleri</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>🖼️ Galeriden Yeni Fotoğraf Seç:</label>
+                    <input type="file" id="catFileInput" accept="image/*" required onchange="convertImageToBase64(this, 'category')">
+                </div>
+                <button type="submit" class="btn-submit">Fotoğrafı Güncelle</button>
             </form>
         </div>
     </div>
@@ -442,7 +473,8 @@
             console.log("Firebase yerel modda çalışıyor.");
         }
 
-        const categoriesList = [
+        // KATEGORİLER (Lepistes için özel net görsel dahil)
+        let categoriesList = JSON.parse(localStorage.getItem('esaqua_categories')) || [
             { name: "Lepistes & Canlı Doğuranlar", img: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=500&auto=format&fit=crop&q=60" },
             { name: "Tetra & Sürü Balıkları", img: "https://images.unsplash.com/photo-1520315342629-6ea920342047?w=500&auto=format&fit=crop&q=60" },
             { name: "Cüce Ciklet Türleri", img: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=500&auto=format&fit=crop&q=60" },
@@ -455,15 +487,11 @@
 
         let products = JSON.parse(localStorage.getItem('esaqua_products')) || [];
         let uploadedBase64Image = "";
-        
-        // OTURUM DURUMU KESİNLİKLE FALSE BAŞLAR
+        let uploadedCategoryBase64Image = "";
         let isSessionActive = false;
 
         window.onload = function() {
-            // TARAYICIDA KALAN TÜM OTURUM BİLGİLERİNİ TEMİZLE
             localStorage.removeItem('esaqua_admin_logged_in');
-            sessionStorage.clear();
-
             renderCategories();
             syncWithFirebase();
         };
@@ -479,6 +507,15 @@
                         if(document.getElementById('productSection').style.display === 'block') {
                             renderProducts(currentCat);
                         }
+                    }
+                });
+
+                db.ref('categories').on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if(data) {
+                        categoriesList = data;
+                        localStorage.setItem('esaqua_categories', JSON.stringify(categoriesList));
+                        renderCategories();
                     }
                 });
             }
@@ -539,7 +576,6 @@
                 const imgSrc = p.image && p.image.trim() !== '' ? p.image : 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=500&auto=format&fit=crop&q=60';
                 const stockClass = p.stock === 'Tükendi' ? 'out-stock' : 'in-stock';
 
-                // Şifre girilip isSessionActive = true olmadıkça Düzenle/Sil butonları Asla Çıkmaz
                 let adminActionHtml = '';
                 if (isSessionActive === true) {
                     adminActionHtml = `
@@ -564,19 +600,22 @@
             });
         }
 
-        function convertImageToBase64(fileInput) {
+        function convertImageToBase64(fileInput, type) {
             const file = fileInput.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    uploadedBase64Image = e.target.result;
+                    if(type === 'product') {
+                        uploadedBase64Image = e.target.result;
+                    } else if(type === 'category') {
+                        uploadedCategoryBase64Image = e.target.result;
+                    }
                 };
                 reader.readAsDataURL(file);
             }
         }
 
         function openAdminLogin() { 
-            // HER DEFAŞINDA ŞİFRE MODALINI AÇAR
             document.getElementById('adminPassword').value = '';
             document.getElementById('loginError').style.display = 'none';
             document.getElementById('loginModal').classList.add('is-open'); 
@@ -587,9 +626,14 @@
             document.getElementById('adminModal').classList.add('is-open');
         }
 
+        function openCategoryPhotoModal() {
+            document.getElementById('categoryPhotoModal').classList.add('is-open');
+        }
+
         function closeModals() {
             document.getElementById('loginModal').classList.remove('is-open');
             document.getElementById('adminModal').classList.remove('is-open');
+            document.getElementById('categoryPhotoModal').classList.remove('is-open');
             document.getElementById('adminPassword').value = '';
             document.getElementById('loginError').style.display = 'none';
         }
@@ -599,21 +643,41 @@
             if(pwd === '123') {
                 isSessionActive = true;
                 
-                // Buton görünümlerini güncelle
                 document.getElementById('adminStatusBtn').innerText = '🔓 Yönetici Aktif';
                 document.getElementById('adminStatusBtn').style.backgroundColor = '#dcfce7';
                 document.getElementById('adminStatusBtn').style.color = '#166534';
-                document.getElementById('addProductBtn').style.display = 'inline-block'; // "+ Yeni Ürün Ekle" Butonunu Göster
+                document.getElementById('addProductBtn').style.display = 'inline-block';
+                document.getElementById('addCategoryPhotoBtn').style.display = 'inline-block';
                 
-                closeModals(); // ŞİFRE MODALINI KAPAT
+                closeModals();
 
-                // Kategorideki ürünlerin altına Düzenle ve Sil butonlarını ekle
                 const currentCat = document.getElementById('currentCategoryTitle').innerText;
                 if(document.getElementById('productSection').style.display === 'block') {
                     renderProducts(currentCat);
                 }
             } else {
                 document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function handleCategoryPhotoUpdate(e) {
+            e.preventDefault();
+            const selectedCatName = document.getElementById('targetCategorySelect').value;
+            
+            if (uploadedCategoryBase64Image) {
+                const catIndex = categoriesList.findIndex(c => c.name === selectedCatName);
+                if (catIndex !== -1) {
+                    categoriesList[catIndex].img = uploadedCategoryBase64Image;
+                    localStorage.setItem('esaqua_categories', JSON.stringify(categoriesList));
+                    if(db) db.ref('categories').set(categoriesList);
+                    
+                    renderCategories();
+                    alert('Kategori fotoğrafı başarıyla güncellendi!');
+                    closeModals();
+                    uploadedCategoryBase64Image = "";
+                }
+            } else {
+                alert('Lütfen bir fotoğraf seçin!');
             }
         }
 
@@ -710,5 +774,3 @@
     </script>
 </body>
 </html>
-            
-          
