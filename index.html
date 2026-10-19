@@ -1,5 +1,4 @@
-
-          <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -457,11 +456,14 @@
         let products = JSON.parse(localStorage.getItem('esaqua_products')) || [];
         let uploadedBase64Image = "";
         
-        // ÖNCELERDEN KALMA HATIRLANAN OTURUMU TEMİZLE (HER ZAMAN ŞİFRE SORMASI İÇİN)
-        localStorage.removeItem('esaqua_admin_logged_in');
+        // OTURUM DURUMU KESİNLİKLE FALSE BAŞLAR
         let isSessionActive = false;
 
         window.onload = function() {
+            // TARAYICIDA KALAN TÜM OTURUM BİLGİLERİNİ TEMİZLE
+            localStorage.removeItem('esaqua_admin_logged_in');
+            sessionStorage.clear();
+
             renderCategories();
             syncWithFirebase();
         };
@@ -537,9 +539,9 @@
                 const imgSrc = p.image && p.image.trim() !== '' ? p.image : 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=500&auto=format&fit=crop&q=60';
                 const stockClass = p.stock === 'Tükendi' ? 'out-stock' : 'in-stock';
 
-                // Şifre doğru girildiyse ürün kartlarında DÜZENLE ve SİL butonları görünür
+                // Şifre girilip isSessionActive = true olmadıkça Düzenle/Sil butonları Asla Çıkmaz
                 let adminActionHtml = '';
-                if (isSessionActive) {
+                if (isSessionActive === true) {
                     adminActionHtml = `
                         <div class="card-admin-actions">
                             <button class="card-btn-edit" onclick="openEditModal(${p.id})">✏️ Düzenle</button>
@@ -574,7 +576,9 @@
         }
 
         function openAdminLogin() { 
-            // HER BASTIĞINIZDA ŞİFRE SORMASI İÇİN LOGIN MODALI AÇILIR
+            // HER DEFAŞINDA ŞİFRE MODALINI AÇAR
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('loginError').style.display = 'none';
             document.getElementById('loginModal').classList.add('is-open'); 
         }
         
@@ -591,18 +595,19 @@
         }
 
         function checkPassword() {
-            if(document.getElementById('adminPassword').value === '123') {
+            const pwd = document.getElementById('adminPassword').value;
+            if(pwd === '123') {
                 isSessionActive = true;
                 
-                // Sağ üstteki butonların görünümünü güncelle
+                // Buton görünümlerini güncelle
                 document.getElementById('adminStatusBtn').innerText = '🔓 Yönetici Aktif';
                 document.getElementById('adminStatusBtn').style.backgroundColor = '#dcfce7';
                 document.getElementById('adminStatusBtn').style.color = '#166534';
                 document.getElementById('addProductBtn').style.display = 'inline-block'; // "+ Yeni Ürün Ekle" Butonunu Göster
                 
-                closeModals(); // ŞİFRE PENCERESİNİ KAPAT (Ürün ekleme ekranı doğrudan AÇILMAZ)
+                closeModals(); // ŞİFRE MODALINI KAPAT
 
-                // Kategorideki ürünlerin altına Düzenle ve Sil butonlarını yerleştir
+                // Kategorideki ürünlerin altına Düzenle ve Sil butonlarını ekle
                 const currentCat = document.getElementById('currentCategoryTitle').innerText;
                 if(document.getElementById('productSection').style.display === 'block') {
                     renderProducts(currentCat);
@@ -705,3 +710,5 @@
     </script>
 </body>
 </html>
+            
+          
