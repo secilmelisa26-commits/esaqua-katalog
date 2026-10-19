@@ -47,23 +47,24 @@
         }
 
         .back-btn {
-            background-color: #334155;
+            background-color: var(--primary);
             color: white;
             border: none;
-            padding: 0.45rem 0.9rem;
+            padding: 0.5rem 1rem;
             border-radius: 20px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.8rem;
+            font-weight: 700;
+            font-size: 0.85rem;
             display: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
+        .back-btn:hover { background-color: var(--primary-dark); }
 
         .admin-btn {
             background-color: #e2e8f0;
             color: #475569;
             border: 1px solid #cbd5e1;
-            padding: 0.35rem 0.75rem;
+            padding: 0.4rem 0.85rem;
             border-radius: 20px;
             cursor: pointer;
             font-weight: 600;
@@ -80,7 +81,7 @@
             padding-bottom: 0.4rem;
         }
 
-        /* YALNIZCA 7 TANE MOBİL UYUMLU KATEGORİ KARTLARI */
+        /* KATEGORİ KARTLARI GRID */
         .category-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -129,7 +130,7 @@
             line-height: 1.25;
         }
 
-        /* MOBİL UYUMLU ÜRÜN KARTLARI (KATEGORİ İÇİ) */
+        /* ÜRÜN KARTLARI */
         .product-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -262,27 +263,27 @@
             <button class="admin-btn" onclick="openAdminLogin()">🔒 Yönetim</button>
         </div>
 
-        <!-- 1. EKRAN: SADECE 7 ADET FOTOĞRAFLI KATEGORİ -->
+        <!-- 1. EKRAN: KATEGORİLER -->
         <div id="categorySection">
             <h2 class="section-title">Kategoriler</h2>
             <div class="category-grid" id="categoryGrid"></div>
         </div>
 
-        <!-- 2. EKRAN: SEÇİLEN KATEGORİDEKİ ÜRÜNLER -->
+        <!-- 2. EKRAN: KATEGORİ İÇİ ÜRÜNLER -->
         <div id="productSection" style="display: none;">
             <h2 class="section-title" id="currentCategoryTitle">Ürünler</h2>
             <div class="product-grid" id="productGrid"></div>
         </div>
     </main>
 
-    <!-- ŞİFRE GİRİŞ MODAL -->
+    <!-- ŞİFRE GİRİŞ MODAL (GİZLİ ŞİFRE FORMATI) -->
     <div class="modal" id="loginModal">
         <div class="modal-content" style="max-width: 300px;">
             <span class="close-modal" onclick="closeModals()">&times;</span>
             <h3 style="margin-bottom: 0.8rem; font-size: 1rem;">Yönetici Girişi</h3>
             <div class="form-group">
                 <label>Şifre</label>
-                <input type="password" id="adminPassword" placeholder="Şifre (123)">
+                <input type="password" id="adminPassword" placeholder="Şifrenizi girin">
             </div>
             <button class="btn-submit" onclick="checkPassword()">Giriş Yap</button>
             <p id="loginError" style="color: #dc2626; font-size: 0.75rem; margin-top: 0.4rem; text-align: center; display: none;">Hatalı şifre!</p>
@@ -299,18 +300,19 @@
                 <h3 style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--primary);">Yeni Ürün / Canlı Ekle</h3>
                 <div class="form-group">
                     <label>Ürün Adı</label>
-                    <input type="text" id="newTitle" required placeholder="Örn: Celebes Rainbow">
+                    <input type="text" id="newTitle" required placeholder="Örn: Full Red Lepistes">
                 </div>
                 <div class="form-group">
-                    <label>Kategori (7 Ana Kategori)</label>
+                    <label>Kategori Seçin</label>
                     <select id="newCategory" required>
                         <option value="Lepistes & Canlı Doğuranlar">Lepistes & Canlı Doğuranlar</option>
-                        <option value="Ciklet Türleri">Ciklet Türleri</option>
                         <option value="Tetra & Sürü Balıkları">Tetra & Sürü Balıkları</option>
+                        <option value="Cüce Ciklet Türleri">Cüce Ciklet Türleri</option>
+                        <option value="Ciklet Türleri">Ciklet Türleri</option>
                         <option value="Diğer Renkli & Karma Balıklar">Diğer Renkli & Karma Balıklar</option>
                         <option value="Vatoz, Çöpçü & Dip Balıkları">Vatoz, Çöpçü & Dip Balıkları</option>
                         <option value="Betalar & Omurgasızlar">Betalar & Omurgasızlar</option>
-                        <option value="Akvaryum Malzemeleri & Bitkiler">Akvaryum Malzemeleri & Bitkiler</option>
+                        <option value="Bitki ve Ürün Çeşitleri">Bitki ve Ürün Çeşitleri</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -341,15 +343,13 @@
 
             <hr style="margin: 1.2rem 0; border: 0; border-top: 1px solid var(--border);">
 
-            <h3 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Mevcut Ürün Fiyat & Stok Güncelle / Sil</h3>
+            <h3 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Mevcut Ürünleri Sil</h3>
             <div id="adminProductList" style="max-height: 200px; overflow-y: auto;"></div>
         </div>
     </div>
 
     <script>
-        // -------------------------------------------------------------
-        // FIREBASE VERİTABANI BAĞLANTISI (İsteğe Bağlı - Otomatik Çalışır)
-        // -------------------------------------------------------------
+        // Firebase Bağlantısı
         const firebaseConfig = {
             apiKey: "AIzaSy_YOUR_API_KEY",
             authDomain: "esaqua-katalog.firebaseapp.com",
@@ -368,15 +368,16 @@
             console.log("Firebase yerel modda çalışıyor.");
         }
 
-        // TAM OLARAK 7 KATEGORİ VE RESİMLERİ
+        // İSTEDİĞİN 8 ANA KATEGORİ VE KAPAK GÖRSELLERİ
         const categoriesList = [
             { name: "Lepistes & Canlı Doğuranlar", img: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=500&auto=format&fit=crop&q=60" },
-            { name: "Ciklet Türleri", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&auto=format&fit=crop&q=60" },
             { name: "Tetra & Sürü Balıkları", img: "https://images.unsplash.com/photo-1520315342629-6ea920342047?w=500&auto=format&fit=crop&q=60" },
+            { name: "Cüce Ciklet Türleri", img: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=500&auto=format&fit=crop&q=60" },
+            { name: "Ciklet Türleri", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&auto=format&fit=crop&q=60" },
             { name: "Diğer Renkli & Karma Balıklar", img: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=500&auto=format&fit=crop&q=60" },
             { name: "Vatoz, Çöpçü & Dip Balıkları", img: "https://images.unsplash.com/photo-1534043464124-3be32fe000c9?w=500&auto=format&fit=crop&q=60" },
             { name: "Betalar & Omurgasızlar", img: "https://images.unsplash.com/photo-1548425804-d57262f3f9f7?w=500&auto=format&fit=crop&q=60" },
-            { name: "Akvaryum Malzemeleri & Bitkiler", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=500&auto=format&fit=crop&q=60" }
+            { name: "Bitki and Ürün Çeşitleri", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=500&auto=format&fit=crop&q=60" }
         ];
 
         let products = JSON.parse(localStorage.getItem('esaqua_products')) || [];
@@ -387,7 +388,6 @@
             syncWithFirebase();
         };
 
-        // Firebase ile Gerçek Zamanlı Senkronizasyon (Herkes Eşit Görür)
         function syncWithFirebase() {
             if(db) {
                 db.ref('products').on('value', (snapshot) => {
@@ -396,13 +396,14 @@
                         products = Object.values(data);
                         localStorage.setItem('esaqua_products', JSON.stringify(products));
                         const currentCat = document.getElementById('currentCategoryTitle').innerText;
-                        if(currentCat) renderProducts(currentCat);
+                        if(document.getElementById('productSection').style.display === 'block') {
+                            renderProducts(currentCat);
+                        }
                     }
                 });
             }
         }
 
-        // 7 Ana Kategori Kartını Çiz
         function renderCategories() {
             const grid = document.getElementById('categoryGrid');
             grid.innerHTML = '';
@@ -420,27 +421,28 @@
             });
         }
 
-        // Kategoriye Giriş
         function openCategory(catName) {
             document.getElementById('categorySection').style.display = 'none';
             document.getElementById('productSection').style.display = 'block';
             document.getElementById('backBtn').style.display = 'block';
             document.getElementById('currentCategoryTitle').innerText = catName;
 
-            history.pushState({ page: 'category' }, '');
+            history.pushState({ page: 'category', name: catName }, '');
             renderProducts(catName);
+            window.scrollTo(0, 0);
         }
 
-        // Ana Ekran Dönüş
         function goHome() {
             document.getElementById('categorySection').style.display = 'block';
             document.getElementById('productSection').style.display = 'none';
             document.getElementById('backBtn').style.display = 'none';
+            window.scrollTo(0, 0);
         }
 
-        window.onpopstate = function() { goHome(); };
+        window.onpopstate = function(event) {
+            goHome();
+        };
 
-        // Ürünleri Göster
         function renderProducts(catName) {
             const grid = document.getElementById('productGrid');
             grid.innerHTML = '';
@@ -470,7 +472,6 @@
             });
         }
 
-        // Resim Dosyası Okuma (Galeriden / Bilgisayardan)
         function convertImageToBase64(fileInput) {
             const file = fileInput.files[0];
             if (file) {
@@ -483,6 +484,7 @@
         }
 
         function openAdminLogin() { document.getElementById('loginModal').classList.add('is-open'); }
+        
         function closeModals() {
             document.getElementById('loginModal').classList.remove('is-open');
             document.getElementById('adminModal').classList.remove('is-open');
@@ -500,7 +502,6 @@
             }
         }
 
-        // Yeni Ürün Kaydet (Hem Yerel Hem Canlı Veritabanına)
         function handleAddNewProduct(e) {
             e.preventDefault();
             const urlImg = document.getElementById('newImage').value;
