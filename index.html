@@ -2,190 +2,546 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex, nofollow">
-  <title>Esaqua Petshop - Canlı Kataloğu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="googlebot" content="noindex, nofollow, noarchive">
+  <title>Esaqua Pet Shop | Canlı ve Ürün Kataloğu</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f8; color: #333; }
-    
-    header { background: linear-gradient(135deg, #1e293b, #0f172a); color: #fff; text-align: center; padding: 25px 15px; }
-    header h1 { font-size: 26px; margin-bottom: 5px; letter-spacing: 1px; color: #f8fafc; }
-    header p { font-size: 14px; color: #94a3b8; }
-
-    .container { max-width: 1000px; margin: 0 auto; padding: 15px; }
-
-    /* Arama ve Navigasyon Barı */
-    .search-box { margin-bottom: 20px; text-align: center; }
-    .search-box input { width: 100%; max-width: 500px; padding: 12px 18px; border: 2px solid #cbd5e1; border-radius: 25px; font-size: 15px; outline: none; transition: 0.3s; }
-    .search-box input:focus { border-color: #0284c7; box-shadow: 0 0 8px rgba(2, 132, 199, 0.3); }
-
-    .breadcrumb { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; background: #fff; padding: 10px 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .back-btn { background: #0284c7; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; display: none; }
-    .back-btn:hover { background: #0369a1; }
-    .section-title { font-size: 18px; font-weight: 600; color: #1e293b; }
-
-    /* Izgara Yapısı (Grid) */
-    .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-    @media (min-width: 600px) {
-      .grid-container { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+    :root {
+      --bg: #f5f7f7;
+      --card: #ffffff;
+      --text: #172b30;
+      --muted: #6a7a7e;
+      --accent: #087e8b;
+      --accent-dark: #075b64;
+      --border: #e2e9e9;
+      --danger: #b42318;
+      --radius: 18px;
     }
 
-    /* Kategori & Ürün Kart Tasarımları */
-    .card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.06); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #e2e8f0; display: flex; flex-direction: column; }
-    .card:hover { transform: translateY(-4px); box-shadow: 0 8px 15px rgba(0,0,0,0.12); }
-    .card img { width: 100%; height: 140px; object-fit: cover; background-color: #e2e8f0; }
-    .card-body { padding: 12px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-    .card-title { font-size: 15px; font-weight: 600; color: #0f172a; margin-bottom: 4px; }
-    .card-subtitle { font-size: 12px; color: #64748b; }
-    .card-price { font-size: 16px; font-weight: bold; color: #16a34a; margin-top: 6px; }
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 24px 16px;
+    }
+
+    .header-inner {
+      max-width: 1150px;
+      margin: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      font-size: 27px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .brand span { color: var(--accent); }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 6px;
+      font-size: 14px;
+    }
+
+    main {
+      max-width: 1150px;
+      margin: auto;
+      padding: 24px 16px 60px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    input, textarea, select {
+      min-width: 0;
+      width: 100%;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 10px;
+      padding: 12px;
+      color: var(--text);
+    }
+
+    .search {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: 0;
+      padding: 11px 15px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    .btn:hover { background: var(--accent-dark); }
+
+    .btn.secondary {
+      color: var(--text);
+      background: white;
+      border: 1px solid var(--border);
+    }
+
+    .btn.danger { background: var(--danger); }
+
+    .btn.small {
+      font-size: 13px;
+      padding: 8px 10px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin: 18px 0;
+      flex-wrap: wrap;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h2 { font-size: 22px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .category-card, .product-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .category-card {
+      cursor: pointer;
+      transition: transform .18s, box-shadow .18s;
+    }
+
+    .category-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px #102b3010;
+    }
+
+    .category-image {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      display: block;
+      background: #e8f0ef;
+    }
+
+    .category-placeholder {
+      aspect-ratio: 4 / 3;
+      display: grid;
+      place-items: center;
+      font-size: 46px;
+      background: linear-gradient(135deg, #e1f5f2, #edf1f8);
+    }
+
+    .card-content { padding: 15px; }
+
+    .card-content h3 {
+      font-size: 16px;
+      line-height: 1.4;
+      margin-bottom: 7px;
+    }
+
+    .description {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .product-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      display: block;
+      background: #e8f0ef;
+    }
+
+    .product-placeholder {
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+      font-size: 42px;
+      background: linear-gradient(135deg, #e1f5f2, #edf1f8);
+    }
+
+    .price {
+      font-weight: 800;
+      font-size: 20px;
+      margin: 12px 0 8px;
+    }
+
+    .stock {
+      display: inline-block;
+      font-size: 12px;
+      padding: 6px 9px;
+      border-radius: 20px;
+      background: #e5f6eb;
+      color: #17663a;
+      font-weight: 700;
+    }
+
+    .stock.out {
+      background: #fce8e6;
+      color: #a12622;
+    }
+
+    .admin-tools {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .admin-tools button { flex: 1; }
+
+    .hidden { display: none !important; }
+
+    .notice {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 22px;
+      border-radius: var(--radius);
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .back {
+      margin-bottom: 16px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: #102328aa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 520px;
+      padding: 24px;
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+
+    .modal-box h2 { margin-bottom: 18px; }
+
+    .form-field { margin-bottom: 14px; }
+
+    .form-field label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .form-actions button { flex: 1; }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+
+    #status {
+      margin-bottom: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px 16px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+      header { padding: 19px 14px; }
+      main { padding: 18px 12px 40px; }
+      .brand { font-size: 24px; }
+      .card-content { padding: 11px; }
+      .card-content h3 { font-size: 14px; }
+      .price { font-size: 17px; }
+      .btn { padding: 10px 12px; }
+    }
   </style>
 </head>
-<body>
 
+<body>
   <header>
-    <h1>Esaqua Petshop</h1>
-    <p>Canlı Akvaryum Balıkları ve Bitki Kataloğu</p>
+    <div class="header-inner">
+      <div>
+        <div class="brand">Esaqua<span>Petshop</span></div>
+        <div class="subtitle">Canlı ve Ürün Kataloğu</div>
+      </div>
+
+      <div>
+        <button id="adminLoginButton" class="btn secondary"
+                onclick="openLogin()">Yönetici Girişi</button>
+        <button id="adminLogoutButton" class="btn hidden"
+                onclick="logout()">Çıkış Yap</button>
+      </div>
+    </div>
   </header>
 
-  <div class="container">
-    <div class="search-box">
-      <input type="text" id="searchInput" placeholder="Balık türü veya ürün adı ara..." onkeyup="searchItems()">
+  <main>
+    <div id="status" role="status"></div>
+
+    <div class="toolbar">
+      <input id="searchInput" class="search"
+             type="search"
+             placeholder="Balık veya ürün ara..."
+             aria-label="Balık veya ürün ara">
+      <button class="btn secondary" onclick="showCategories()">Kategoriler</button>
     </div>
 
-    <div class="breadcrumb">
-      <span class="section-title" id="pageTitle">Kategoriler</span>
-      <button class="back-btn" id="backBtn" onclick="showCategories()">← Tüm Kategoriler</button>
+    <div id="adminBar" class="notice hidden" style="margin-bottom:20px">
+      <strong>Yönetici paneli</strong>
+      <p class="description" style="margin-top:8px">
+        Buradan kategori ve ürünlerini yönetebilirsin.
+        Fotoğraflar buluta yüklenir.
+      </p>
+      <div class="toolbar" style="margin-bottom:0">
+        <button class="btn" onclick="openProductForm()">+ Ürün Ekle</button>
+        <button class="btn secondary" onclick="openCategoryForm()">Kategori Düzenle</button>
+      </div>
     </div>
 
-    <!-- Fotoğraflı Kutucukların Görüneceği Alan -->
-    <div class="grid-container" id="mainGrid"></div>
+    <div id="categoryView">
+      <div class="section-head">
+        <h2>Kategoriler</h2>
+      </div>
+      <div id="categoryGrid" class="grid"></div>
+    </div>
+
+    <div id="productView" class="hidden">
+      <button class="btn secondary back" onclick="showCategories()">
+        ← Tüm Kategoriler
+      </button>
+      <div class="section-head">
+        <div>
+          <h2 id="categoryTitle"></h2>
+          <div id="categoryDescription" class="description"></div>
+        </div>
+        <button id="editCategoryButton"
+                class="btn secondary hidden"
+                onclick="editCurrentCategory()">Kategoriyi Düzenle</button>
+      </div>
+      <div id="productGrid" class="grid"></div>
+    </div>
+
+    <div id="emptyState" class="notice hidden">
+      Henüz burada ürün yok. Yönetici girişi yaptıktan sonra yeni ürün ekleyebilirsin.
+    </div>
+  </main>
+
+  <footer>
+    Esaqua Pet Shop · Akvaryum Canlıları
+  </footer>
+
+  <!-- Yönetici girişi -->
+  <div id="loginModal" class="modal hidden">
+    <div class="modal-box">
+      <h2>Yönetici Girişi</h2>
+      <form onsubmit="login(event)">
+        <div class="form-field">
+          <label for="loginEmail">Yönetici e-posta adresi</label>
+          <input id="loginEmail" type="email" autocomplete="username" required>
+        </div>
+        <div class="form-field">
+          <label for="loginPassword">Şifre</label>
+          <input id="loginPassword" type="password"
+                 autocomplete="current-password" required>
+        </div>
+        <div class="form-actions">
+          <button class="btn" type="submit">Giriş Yap</button>
+          <button class="btn secondary" type="button"
+                  onclick="closeModal('loginModal')">Vazgeç</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Ürün ekleme / düzenleme -->
+  <div id="productModal" class="modal hidden">
+    <div class="modal-box">
+      <h2 id="productFormTitle">Ürün Ekle</h2>
+      <form id="productForm" onsubmit="saveProduct(event)">
+        <input id="productId" type="hidden">
+
+        <div class="form-field">
+          <label for="productName">Ürün veya balık adı</label>
+          <input id="productName" required maxlength="150">
+        </div>
+
+        <div class="form-field">
+          <label for="productCategory">Kategori</label>
+          <select id="productCategory" required></select>
+        </div>
+
+        <div class="form-field">
+          <label for="productPrice">Fiyat (TL)</label>
+          <input id="productPrice" type="number" min="0"
+                 max="999999999" step="0.01" required>
+        </div>
+
+        <div class="form-field">
+          <label for="productStock">Stok durumu</label>
+          <select id="productStock">
+            <option value="Stokta">Stokta</option>
+            <option value="Tükendi">Tükendi</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="productImage">Fotoğraf</label>
+          <input id="productImage" type="file"
+                 accept="image/*">
+          <div class="hint">
+            Telefon galerisinden veya bilgisayarındaki klasörden fotoğraf seçebilirsin.
+            Fotoğraf seçmezsen mevcut fotoğraf korunur.
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" type="submit">Kaydet</button>
+          <button class="btn secondary" type="button"
+                  onclick="closeModal('productModal')">Vazgeç</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Kategori düzenleme -->
+  <div id="categoryModal" class="modal hidden">
+    <div class="modal-box">
+      <h2>Kategori Düzenle</h2>
+      <form onsubmit="saveCategory(event)">
+        <div class="form-field">
+          <label for="categorySelect">Kategori</label>
+          <select id="categorySelect" required></select>
+        </div>
+
+        <div class="form-field">
+          <label for="categoryName">Kategori adı</label>
+          <input id="categoryName" maxlength="120" required>
+        </div>
+
+        <div class="form-field">
+          <label for="categoryDesc">Açıklama</label>
+          <textarea id="categoryDesc" rows="3"></textarea>
+        </div>
+
+        <div class="form-field">
+          <label for="categoryImage">Kategori fotoğrafı</label>
+          <input id="categoryImage" type="file" accept="image/*">
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" type="submit">Kaydet</button>
+          <button class="btn secondary" type="button"
+                  onclick="closeModal('categoryModal')">Vazgeç</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script>
-    // Veri Tabanı (Görseller Unsplash'ten canlı balık fotoğraflarıyla ayarlandı)
-    const catalogData = [
-      {
-        id: "lepistes",
-        name: "Lepistes & Canlı Doğuranlar",
-        image: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=500&q=80",
-        items: [
-          { name: "Special Lepistes Çeşitleri", price: "75 TL", image: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=500&q=80" },
-          { name: "Full Red Lepistes", price: "90 TL", image: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=500&q=80" },
-          { name: "Plati Çeşitleri", price: "45 TL", image: "https://images.unsplash.com/photo-1520301255226-bf5f144451c1?auto=format&fit=crop&w=500&q=80" }
-        ]
-      },
-      {
-        id: "cuce-ciklet",
-        name: "Cüce Cikletler & Apistogramma",
-        image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=500&q=80",
-        items: [
-          { name: "Apistogramma Panduro (Pandurini)", price: "220 TL", image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=500&q=80" },
-          { name: "Apistogramma Cacatuoides", price: "200 TL", image: "https://images.unsplash.com/photo-1524704654690-b56c05c78a00?auto=format&fit=crop&w=500&q=80" },
-          { name: "German Blue Ramirezi", price: "150 TL", image: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=500&q=80" }
-        ]
-      },
-      {
-        id: "tetra",
-        name: "Tetra & Sürü Balıkları",
-        image: "https://images.unsplash.com/photo-1524704654690-b56c05c78a00?auto=format&fit=crop&w=500&q=80",
-        items: [
-          { name: "Kırmızı Burun Tetra", price: "35 TL", image: "https://images.unsplash.com/photo-1524704654690-b56c05c78a00?auto=format&fit=crop&w=500&q=80" },
-          { name: "Neon Tetra", price: "30 TL", image: "https://images.unsplash.com/photo-1520301255226-bf5f144451c1?auto=format&fit=crop&w=500&q=80" }
-        ]
-      },
-      {
-        id: "ciklet",
-        name: "Ciklet Türleri",
-        image: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=500&q=80",
-        items: [
-          { name: "Sarı Prenses", price: "60 TL", image: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=500&q=80" },
-          { name: "Yunus Ciklet", price: "70 TL", image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=500&q=80" }
-        ]
-      }
-    ];
+    // 1. BURAYA KENDİ SUPABASE PROJE BİLGİLERİNİ GİR.
+    const SUPABASE_URL = "SUPABASE_PROJE_URL_BURAYA";
+    const SUPABASE_ANON_KEY = "SUPABASE_ANON_KEY_BURAYA";
 
-    const mainGrid = document.getElementById("mainGrid");
-    const pageTitle = document.getElementById("pageTitle");
-    const backBtn = document.getElementById("backBtn");
+    let db;
+    let categories = [];
+    let products = [];
+    let currentCategoryId = null;
+    let isAdmin = false;
+    let currentCategoryImageUrl = "";
 
-    // Ana Ekran: Kategorileri Görsel Kutucuk Olarak Göster
-    function showCategories() {
-      pageTitle.innerText = "Kategoriler";
-      backBtn.style.display = "none";
-      mainGrid.innerHTML = "";
+    const $ = id => document.getElementById(id);
 
-      catalogData.forEach(cat => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.onclick = () => showProducts(cat.id);
-        card.innerHTML = `
-          <img src="${cat.image}" alt="${cat.name}">
-          <div class="card-body">
-            <div class="card-title">${cat.name}</div>
-            <div class="card-subtitle">${cat.items.length} Çeşit Balık</div>
-          </div>
-        `;
-        mainGrid.appendChild(card);
-      });
+    function setStatus(message, error = false) {
+      $("status").textContent = message;
+      $("status").style.color = error ? "#b42318" : "#17663a";
     }
 
-    // Kategoriye Tıklandığında: Balık Fotoğraflarını ve Fiyatlarını Göster
-    function showProducts(catId) {
-      const category = catalogData.find(c => c.id === catId);
-      if (!category) return;
-
-      pageTitle.innerText = category.name;
-      backBtn.style.display = "block";
-      mainGrid.innerHTML = "";
-
-      category.items.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <img src="${item.image}" alt="${item.name}">
-          <div class="card-body">
-            <div class="card-title">${item.name}</div>
-            <div class="card-price">${item.price}</div>
-          </div>
-        `;
-        mainGrid.appendChild(card);
-      });
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
     }
 
-    // Arama Fonksiyonu
-    function searchItems() {
-      const query = document.getElementById("searchInput").value.toLowerCase();
-      if (!query) {
-        showCategories();
-        return;
-      }
+    function formatPrice(value) {
+      return new Intl.NumberFormat("tr-TR", {
+        style: "currency",
+        currency: "TRY",
+        maximumFractionDigits: 2
 
-      pageTitle.innerText = "Arama Sonuçları";
-      backBtn.style.display = "block";
-      mainGrid.innerHTML = "";
+Sana kopyalayıp index html dosyasına yapıştırabileceğin tam kodu hazırlayacağım. Önce bir defalık veritabanı kodunu Supabase'e SQL Editor'da çalıştıracaksın, şifrelerini burada paylaşmana gerek yok. Kodda kendi Supabase proje bilgilerini girmen gerekiyor. Gizli service_role anahtar HTML dosyasına koyma lütfen. İşte tam çalışan kodu veriyorum, olduğu gibi kopyalayıp mevcut index html dosyasının tamamının yerine yapıştıracaksın. Kodun içinde `SUPABASE URL` ve `SUPABASE ANON KEY` alanlarını kendi Supabase projenin API Keys bölümünden dolduracaksın. Yönetici şifresi de HTML içine yazılmıyor, onu Supabase tarafında güvenli tutacağız. Bu kodda hem yönetici paneli, hem fotoğraf yükleme, hem de kategoriler hazır halde geliyor. Kopyala, yapıştır, sonra sadece kendi Supabase'inden API anahtar larını kullan arak başlat acağız.
 
-      catalogData.forEach(cat => {
-        cat.items.forEach(item => {
-          if (item.name.toLowerCase().includes(query)) {
-            const card = document.createElement("div");
-            card.className = "card";
-            card.innerHTML = `
-              <img src="${item.image}" alt="${item.name}">
-              <div class="card-body">
-                <div class="card-title">${item.name}</div>
-                <div class="card-subtitle">${cat.name}</div>
-                <div class="card-price">${item.price}</div>
-              </div>
-            `;
-            mainGrid.appendChild(card);
-          }
-        });
-      });
-    }
-
-    // İlk açılışta kategorileri yükle
-    showCategories();
-  </script>
-</body>
-</html>
+  
