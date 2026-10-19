@@ -1,5 +1,5 @@
 
-             <!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -318,12 +318,6 @@
             background: #64748b; color: white; border: none; padding: 0.4rem; border-radius: 6px; width: 100%; font-weight: 600; cursor: pointer; font-size: 0.8rem; margin-top: 0.4rem; display: none;
         }
 
-        .admin-row {
-            display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.82rem;
-        }
-        .admin-actions { display: flex; gap: 4px; }
-        .btn-edit { background: #0284c7; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.72rem; font-weight: 600; }
-        .btn-delete { background: #dc2626; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.72rem; font-weight: 600; }
         .empty-state { text-align: center; padding: 2rem; color: var(--text-muted); grid-column: 1 / -1; font-size: 0.85rem; }
     </style>
 </head>
@@ -376,26 +370,18 @@
         </div>
     </div>
 
-    <!-- YÖNETİM PANELİ MODAL -->
+    <!-- YÖNETİM PANELİ MODAL (SADECE YENİ ÜRÜN EKLEME / YÖNETME) -->
     <div class="modal" id="adminModal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModals()">&times;</span>
             <h2 style="margin-bottom: 0.8rem; font-size: 1.1rem;">Yönetim Paneli</h2>
             
-            <!-- SEKME BUTONLARI -->
             <div class="admin-tabs">
-                <button class="tab-btn active" id="tabListBtn" onclick="switchTab('list')">📋 Mevcut Ürünler</button>
-                <button class="tab-btn" id="tabAddBtn" onclick="switchTab('add')">➕ Yeni Ürün Ekle</button>
+                <button class="tab-btn active" id="tabAddBtn" onclick="switchTab('add')">➕ Yeni Ürün Ekle</button>
             </div>
 
-            <!-- SEKME 1: MEVCUT ÜRÜN LİSTESİ -->
-            <div id="tabListSection">
-                <h3 style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-muted);">Mevcut Ürünler (Düzenle / Sil)</h3>
-                <div id="adminProductList" style="max-height: 320px; overflow-y: auto;"></div>
-            </div>
-
-            <!-- SEKME 2: ÜRÜN EKLE / DÜZENLE FORMU -->
-            <div id="tabAddSection" style="display: none;">
+            <!-- ÜRÜN EKLE / DÜZENLE FORMU -->
+            <div id="tabAddSection">
                 <form id="addProductForm" onsubmit="handleAddNewProduct(event)">
                     <h3 id="formModeTitle" style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--primary);">Yeni Ürün / Canlı Ekle</h3>
                     <input type="hidden" id="editingProductId" value="">
@@ -480,8 +466,6 @@
 
         let products = JSON.parse(localStorage.getItem('esaqua_products')) || [];
         let uploadedBase64Image = "";
-
-        // SAYFA YÜKLENDİĞİNDE GİRİŞ DURUMUNU KONTROL ET
         let isSessionActive = localStorage.getItem('esaqua_admin_logged_in') === 'true';
 
         window.onload = function() {
@@ -492,7 +476,7 @@
 
         function updateAdminButtonState() {
             if(isSessionActive) {
-                document.getElementById('adminStatusBtn').innerText = '🔓 Yönetim Paneli';
+                document.getElementById('adminStatusBtn').innerText = '🔓 Ürün Ekle';
             }
         }
 
@@ -567,7 +551,7 @@
                 const imgSrc = p.image && p.image.trim() !== '' ? p.image : 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=500&auto=format&fit=crop&q=60';
                 const stockClass = p.stock === 'Tükendi' ? 'out-stock' : 'in-stock';
 
-                // Yönetici girişi yapılmışsa ürün kartlarında DÜZENLE ve SİL butonları gözükür
+                // Şifre girilmişse ürün kartının altında DÜZENLE ve SİL butonları görünür
                 let adminActionHtml = '';
                 if (isSessionActive) {
                     adminActionHtml = `
@@ -605,9 +589,9 @@
 
         function openAdminLogin() { 
             if(isSessionActive) {
+                // Şifre daha önceden girildiyse direkt YENİ ÜRÜN EKLEME panelini aç
+                resetProductForm();
                 document.getElementById('adminModal').classList.add('is-open');
-                switchTab('list'); // Varsayılan olarak Ürün Listesi sekmesini aç
-                renderAdminList();
             } else {
                 document.getElementById('loginModal').classList.add('is-open'); 
             }
@@ -627,40 +611,25 @@
                 updateAdminButtonState();
                 closeModals();
                 
-                // Ürün kartlarındaki Düzenle/Sil butonlarını göstermek için yenile
+                // Şifre girilince açık olan kategoride hemen Düzenle/Sil butonlarının çıkması için yenile
                 const currentCat = document.getElementById('currentCategoryTitle').innerText;
                 if(document.getElementById('productSection').style.display === 'block') {
                     renderProducts(currentCat);
                 }
 
-                document.getElementById('adminModal').classList.add('is-open');
-                switchTab('list');
-                renderAdminList();
+                // ŞİFRE GİRİLDİKTEN SONRA ANA KATEGORİLERDE KALINIR, panel otomatik açılmaz.
             } else {
                 document.getElementById('loginError').style.display = 'block';
             }
         }
 
-        // SEKMELER ARASI GEÇİŞ
         function switchTab(tabName) {
-            if(tabName === 'list') {
-                document.getElementById('tabListSection').style.display = 'block';
-                document.getElementById('tabAddSection').style.display = 'none';
-                document.getElementById('tabListBtn').classList.add('active');
-                document.getElementById('tabAddBtn').classList.remove('active');
-                renderAdminList();
-            } else {
-                document.getElementById('tabListSection').style.display = 'none';
-                document.getElementById('tabAddSection').style.display = 'block';
-                document.getElementById('tabListBtn').classList.remove('active');
-                document.getElementById('tabAddBtn').classList.add('active');
-            }
+            // Sadece ekleme sekmesi aktif kalır
         }
 
         function openEditModal(id) {
             editProduct(id);
             document.getElementById('adminModal').classList.add('is-open');
-            switchTab('add'); // Düzenleme modunda form sekmesini aç
         }
 
         function handleAddNewProduct(e) {
@@ -702,9 +671,7 @@
 
             localStorage.setItem('esaqua_products', JSON.stringify(products));
             resetProductForm();
-            
-            // Listeyi güncelle ve liste sekmesine geç
-            switchTab('list');
+            closeModals(); // İşlem bitince paneli kapatıp ana sayfada bırakır
 
             const currentCat = document.getElementById('currentCategoryTitle').innerText;
             if(document.getElementById('productSection').style.display === 'block') {
@@ -735,30 +702,7 @@
                 document.getElementById('formModeTitle').innerText = '✏️ Ürün Düzenle: ' + product.title;
                 document.getElementById('btnSubmitForm').innerText = 'Ürünü Güncelle';
                 document.getElementById('btnCancelEdit').style.display = 'block';
-
-                switchTab('add');
             }
-        }
-
-        function renderAdminList() {
-            const listDiv = document.getElementById('adminProductList');
-            listDiv.innerHTML = '';
-            if(products.length === 0) {
-                listDiv.innerHTML = '<p style="color:var(--text-muted); font-size:0.8rem; text-align:center;">Henüz ürün yok.</p>';
-                return;
-            }
-            products.forEach(p => {
-                const row = document.createElement('div');
-                row.className = 'admin-row';
-                row.innerHTML = `
-                    <div><strong>${p.title}</strong> (${p.price})</div>
-                    <div class="admin-actions">
-                        <button class="btn-edit" onclick="editProduct(${p.id})">Düzenle</button>
-                        <button class="btn-delete" onclick="deleteProduct(${p.id})">Sil</button>
-                    </div>
-                `;
-                listDiv.appendChild(row);
-            });
         }
 
         function deleteProduct(id) {
@@ -766,7 +710,6 @@
                 products = products.filter(p => p.id !== id);
                 localStorage.setItem('esaqua_products', JSON.stringify(products));
                 if(db) db.ref('products/' + id).remove();
-                renderAdminList();
 
                 const currentCat = document.getElementById('currentCategoryTitle').innerText;
                 if(document.getElementById('productSection').style.display === 'block') {
@@ -776,4 +719,4 @@
         }
     </script>
 </body>
-</html>
+</html>               
