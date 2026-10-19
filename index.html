@@ -12,8 +12,8 @@
         .header-area { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         h1 { margin: 0; color: #0284c7; font-size: 24px; }
         
-        .btn-toggle-form { background-color: #0284c7; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
-        .btn-toggle-form:hover { background-color: #0369a1; }
+        .admin-link { background-color: #0284c7; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .admin-link:hover { background-color: #0369a1; }
 
         /* KATEGORİ BUTONLARI (EN ÜSTTE) */
         .category-buttons {
@@ -41,33 +41,34 @@
         /* BALIK KATALOĞU LİSTESİ */
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
         }
         .product-card {
             border: 1px solid #e2e8f0;
             border-radius: 10px;
-            padding: 15px;
+            overflow: hidden;
             background: #ffffff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+        }
+        .product-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background-color: #e2e8f0;
+        }
+        .product-body {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
         }
         .cat-badge { font-size: 11px; font-weight: bold; color: #0284c7; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .product-card h3 { margin: 5px 0; font-size: 16px; color: #0f172a; }
-        .price { font-weight: bold; color: #059669; margin-top: 8px; font-size: 15px; }
-
-        /* YÖNETİM/FORM ALANI (VARSAYILAN OLARAK GİZLİ!) */
-        #formArea {
-            display: none; /* SAYFA AÇILDIĞINDA ASLA GÖRÜNMEZ */
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-        }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 13px; }
-        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        .btn-add { background: #059669; color: white; border: none; padding: 10px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; }
+        .product-card h3 { margin: 5px 0 8px 0; font-size: 16px; color: #0f172a; }
+        .product-desc { font-size: 13px; color: #64748b; margin-bottom: 12px; flex-grow: 1; }
+        .price { font-weight: bold; color: #059669; font-size: 16px; margin-top: auto; }
     </style>
 </head>
 <body>
@@ -75,41 +76,10 @@
 <div class="container">
     <div class="header-area">
         <h1>Esaqua Petshop Kataloğu</h1>
-        <button class="btn-toggle-form" onclick="toggleForm()">➕ Balık / Ürün Ekle</button>
+        <button class="admin-link" onclick="openAdmin()">➕ Ürün Yönetimi</button>
     </div>
 
-    <!-- GİZLİ BALIK EKLEME FORMU (SADECE BUTONA BASINCA AÇILIR) -->
-    <div id="formArea">
-        <h3 style="margin-top: 0; color: #0f172a;">Yeni Ürün Ekle</h3>
-        <form onsubmit="saveProduct(event)">
-            <div class="form-group">
-                <label>Balık / Ürün Adı</label>
-                <input type="text" id="pName" required placeholder="Örn: Celebes Rainbow">
-            </div>
-            <div class="form-group">
-                <label>Kategori Seçin</label>
-                <select id="pCat" required>
-                    <option value="Lepistes & Canlı Doğuran Türleri">Lepistes & Canlı Doğuran Türleri</option>
-                    <option value="Cüce Ciklet Türleri">Cüce Ciklet Türleri</option>
-                    <option value="Tetra & Sürü Balıkları">Tetra & Sürü Balıkları</option>
-                    <option value="Ciklet Türleri">Ciklet Türleri (Oscar vb.)</option>
-                    <option value="Vatoz, Çöpçü & Dip Balıkları">Vatoz, Çöpçü & Dip Balıkları</option>
-                    <option value="Diğer Renkli & Karma Balıklar">Diğer Renkli & Karma Balıklar</option>
-                    <option value="Japon Balıkları">Japon Balıkları</option>
-                    <option value="Omurgasızlar">Omurgasızlar (Salyangoz, Karides vb.)</option>
-                    <option value="Betalar">Betalar</option>
-                    <option value="Bitki & Akvaryum Malzemeleri">Bitki & Akvaryum Malzemeleri</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Fiyat</label>
-                <input type="text" id="pPrice" required placeholder="Örn: 90 ₺">
-            </div>
-            <button type="submit" class="btn-add">Kataloğa Kaydet</button>
-        </form>
-    </div>
-
-    <!-- SAYFA AÇILDIĞINDA GÖRÜNEN KATEGORİ BUTONLARI -->
+    <!-- KATEGORİ BUTONLARI -->
     <div class="category-buttons">
         <button class="filter-btn active" onclick="filterCat('Tümü')">Tümü</button>
         <button class="filter-btn" onclick="filterCat('Lepistes & Canlı Doğuran Türleri')">Lepistes & Canlı Doğuranlar</button>
@@ -124,15 +94,33 @@
         <button class="filter-btn" onclick="filterCat('Bitki & Akvaryum Malzemeleri')">Bitki & Malzeme</button>
     </div>
 
-    <!-- BALIK KATALOĞU -->
+    <!-- BALIK KATALOĞU (FOTOĞRAFLI) -->
     <div id="productGrid" class="product-grid"></div>
 </div>
 
 <script>
     const defaultData = [
-        { name: "Celebes Rainbow", cat: "Diğer Renkli & Karma Balıklar", price: "90 ₺" },
-        { name: "Cüce Gurami", cat: "Diğer Renkli & Karma Balıklar", price: "120 ₺" },
-        { name: "Full Red Lepistes", cat: "Lepistes & Canlı Doğuran Türleri", price: "50 ₺" }
+        { 
+            name: "Celebes Rainbow", 
+            cat: "Diğer Renkli & Karma Balıklar", 
+            price: "90 ₺", 
+            image: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=500&auto=format&fit=crop&q=60",
+            desc: "Şeffaf yüzgeçleri ve zarif duruşuyla akvaryumunuza şıklık katar." 
+        },
+        { 
+            name: "Cüce Gurami", 
+            cat: "Diğer Renkli & Karma Balıklar", 
+            price: "120 ₺", 
+            image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&auto=format&fit=crop&q=60",
+            desc: "Barışçıl yapısı ve üst düzey yüzme alışkanlığı ile ideal topluluk balığı." 
+        },
+        { 
+            name: "Full Red Lepistes", 
+            cat: "Lepistes & Canlı Doğuran Türleri", 
+            price: "50 ₺", 
+            image: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=500&auto=format&fit=crop&q=60",
+            desc: "Canlı renkleri ve kolay bakımıyla karma akvaryumların gözdesi." 
+        }
     ];
 
     let fishList = JSON.parse(localStorage.getItem('esaqua_fish_list')) || defaultData;
@@ -154,10 +142,18 @@
         filtered.forEach(item => {
             const card = document.createElement('div');
             card.className = 'product-card';
+            
+            // Eğer fotoğraf eklenmediyse varsayılan şık bir akvaryum görseli göster
+            const imgSrc = (item.image && item.image.trim() !== "") ? item.image : "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=500&auto=format&fit=crop&q=60";
+
             card.innerHTML = `
-                <span class="cat-badge">${item.cat}</span>
-                <h3>${item.name}</h3>
-                <div class="price">${item.price}</div>
+                <img src="${imgSrc}" alt="${item.name}" class="product-img">
+                <div class="product-body">
+                    <span class="cat-badge">${item.cat}</span>
+                    <h3>${item.name}</h3>
+                    <p class="product-desc">${item.desc || ''}</p>
+                    <div class="price">${item.price}</div>
+                </div>
             `;
             grid.appendChild(card);
         });
@@ -171,25 +167,36 @@
         renderList();
     }
 
-    function toggleForm() {
-        const form = document.getElementById('formArea');
-        form.style.display = (form.style.display === 'block') ? 'none' : 'block';
-    }
+    // Şifre korumalı ürün ve fotoğraf ekleme penceresi
+    function openAdmin() {
+        const pass = prompt("Yönetici Şifrenizi Girin:");
+        if (pass === "123") {
+            const name = prompt("Balık / Ürün Adı:");
+            if (!name) return;
+            
+            const cat = prompt("Kategori Seçin (Örn: Diğer Renkli & Karma Balıklar, Lepistes & Canlı Doğuran Türleri, vb.):");
+            if (!cat) return;
 
-    function saveProduct(e) {
-        e.preventDefault();
-        const newFish = {
-            name: document.getElementById('pName').value,
-            cat: document.getElementById('pCat').value,
-            price: document.getElementById('pPrice').value
-        };
-        fishList.unshift(newFish);
-        localStorage.setItem('esaqua_fish_list', JSON.stringify(fishList));
-        renderList();
-        document.getElementById('pName').value = '';
-        document.getElementById('pPrice').value = '';
-        toggleForm(); // Eklendikten sonra formu kapat
-        alert('Balık kataloğa eklendi!');
+            const price = prompt("Fiyat (Örn: 90 ₺):");
+            if (!price) return;
+
+            const image = prompt("Fotoğraf Linki (URL) - İsteğe bağlı (Boş bırakabilirsiniz):");
+            const desc = prompt("Kısa Açıklama (İsteğe bağlı):");
+            
+            fishList.unshift({ 
+                name, 
+                cat, 
+                price, 
+                image: image || "", 
+                desc: desc || "" 
+            });
+
+            localStorage.setItem('esaqua_fish_list', JSON.stringify(fishList));
+            renderList();
+            alert("Ürün ve fotoğrafı başarıyla eklendi!");
+        } else if (pass !== null) {
+            alert("Hatalı şifre!");
+        }
     }
 
     renderList();
