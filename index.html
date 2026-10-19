@@ -200,6 +200,37 @@
         .in-stock { background: #dcfce7; color: #166534; }
         .out-stock { background: #fee2e2; color: #991b1b; }
 
+        /* KART ÜZERİNDEKİ YÖNETİM BUTONLARI */
+        .card-admin-actions {
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px dashed var(--border);
+            display: flex;
+            gap: 6px;
+        }
+        .card-btn-edit {
+            flex: 1;
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 4px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .card-btn-delete {
+            flex: 1;
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 4px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
         /* MODAL VE YÖNETİM */
         .modal {
             display: none !important;
@@ -265,7 +296,7 @@
         <!-- Üst Çubuk -->
         <div class="top-bar">
             <button class="back-btn" id="backBtn" onclick="goHome()">← Bütün Kategorilere Dön</button>
-            <button class="admin-btn" onclick="openAdminLogin()">🔒 Yönetim</button>
+            <button class="admin-btn" id="adminStatusBtn" onclick="openAdminLogin()">🔒 Yönetim</button>
         </div>
 
         <!-- 1. EKRAN: KATEGORİLER -->
@@ -351,7 +382,7 @@
 
             <hr style="margin: 1.2rem 0; border: 0; border-top: 1px solid var(--border);">
 
-            <h3 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Mevcut Ürünleri Yönet (Düzenle / Sil)</h3>
+            <h3 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Mevcut Ürünleri Yönet</h3>
             <div id="adminProductList" style="max-height: 200px; overflow-y: auto;"></div>
         </div>
     </div>
@@ -376,7 +407,6 @@
             console.log("Firebase yerel modda çalışıyor.");
         }
 
-        // KATEGORİLER VE GÖRSELLERİ
         const categoriesList = [
             { name: "Lepistes & Canlı Doğuranlar", img: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=500&auto=format&fit=crop&q=60" },
             { name: "Tetra & Sürü Balıkları", img: "https://images.unsplash.com/photo-1520315342629-6ea920342047?w=500&auto=format&fit=crop&q=60" },
@@ -390,6 +420,7 @@
 
         let products = JSON.parse(localStorage.getItem('esaqua_products')) || [];
         let uploadedBase64Image = "";
+        let isSessionActive = false;
 
         window.onload = function() {
             renderCategories();
@@ -467,6 +498,17 @@
                 const imgSrc = p.image && p.image.trim() !== '' ? p.image : 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=500&auto=format&fit=crop&q=60';
                 const stockClass = p.stock === 'Tükendi' ? 'out-stock' : 'in-stock';
 
+                // Yönetici girişi yapılmışsa ürün kartının altına DÜZENLE ve SİL butonları eklenir
+                let adminActionHtml = '';
+                if (isSessionActive) {
+                    adminActionHtml = `
+                        <div class="card-admin-actions">
+                            <button class="card-btn-edit" onclick="openEditModal(${p.id})">✏️ Düzenle</button>
+                            <button class="card-btn-delete" onclick="deleteProduct(${p.id})">🗑️ Sil</button>
+                        </div>
+                    `;
+                }
+
                 card.innerHTML = `
                     <img src="${imgSrc}" alt="${p.title}" class="product-img">
                     <div class="product-body">
@@ -474,6 +516,7 @@
                         <p class="product-desc">${p.desc || ''}</p>
                         <div class="product-price">${p.price}</div>
                         <div><span class="stock-badge ${stockClass}">${p.stock || 'Stokta Var'}</span></div>
+                        ${adminActionHtml}
                     </div>
                 `;
                 grid.appendChild(card);
@@ -491,9 +534,8 @@
             }
         }
 
-        // KALICI OTURUM MANTIĞI (ŞİFREYİ TEKRAR SORMAMA)
         function openAdminLogin() { 
-            if(localStorage.getItem('esaqua_admin_logged_in') === 'true') {
+            if(isSessionActive) {
                 document.getElementById('adminModal').classList.add('is-open');
                 renderAdminList();
             } else {
@@ -510,8 +552,16 @@
 
         function checkPassword() {
             if(document.getElementById('adminPassword').value === '123') {
-                localStorage.setItem('esaqua_admin_logged_in', 'true'); // Kalıcı olarak oturumu kaydet
+                isSessionActive = true;
+                document.getElementById('adminStatusBtn').innerText = '🔓 Yönetim Panelini Aç';
                 closeModals();
+                
+                // Kategorideki ürünlerin altında Düzenle/Sil butonlarının gözükmesi için tekrar çizdiriyoruz
+                const currentCat = document.getElementById('currentCategoryTitle').innerText;
+                if(document.getElementById('productSection').style.display === 'block') {
+                    renderProducts(currentCat);
+                }
+
                 document.getElementById('adminModal').classList.add('is-open');
                 renderAdminList();
             } else {
@@ -519,14 +569,17 @@
             }
         }
 
-        // ÜRÜN EKLEME / GÜNCELLEME İŞLEMİ
+        function openEditModal(id) {
+            editProduct(id);
+            document.getElementById('adminModal').classList.add('is-open');
+        }
+
         function handleAddNewProduct(e) {
             e.preventDefault();
             const editId = document.getElementById('editingProductId').value;
             const urlImg = document.getElementById('newImage').value;
 
             if (editId) {
-                // ÜRÜN GÜNCELLEME
                 const index = products.findIndex(p => p.id == editId);
                 if (index !== -1) {
                     const finalImage = uploadedBase64Image || urlImg || products[index].image || "";
@@ -541,7 +594,6 @@
                 }
                 alert('Ürün başarıyla güncellendi!');
             } else {
-                // YENİ ÜRÜN EKLEME
                 const finalImage = uploadedBase64Image || urlImg || "";
                 const id = Date.now();
                 const newProduct = {
@@ -563,8 +615,10 @@
             resetProductForm();
             renderAdminList();
 
-            // Otomatik Kapat
-            closeModals();
+            const currentCat = document.getElementById('currentCategoryTitle').innerText;
+            if(document.getElementById('productSection').style.display === 'block') {
+                renderProducts(currentCat);
+            }
         }
 
         function resetProductForm() {
@@ -622,6 +676,11 @@
                 localStorage.setItem('esaqua_products', JSON.stringify(products));
                 if(db) db.ref('products/' + id).remove();
                 renderAdminList();
+
+                const currentCat = document.getElementById('currentCategoryTitle').innerText;
+                if(document.getElementById('productSection').style.display === 'block') {
+                    renderProducts(currentCat);
+                }
             }
         }
     </script>
